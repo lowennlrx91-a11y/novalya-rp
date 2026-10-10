@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novalya RP - Registre Civil & Administration</title>
+    <title>Novalya RP - Panel Administration & Règlement</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -21,17 +21,9 @@
     </style>
     <script>
         const BACKEND_API_URL = "http://155.117.100.51:25578/api/register-identity";
-        const ADMIN_PASSWORD = "Novalya2026!"; // Mot de passe du panel admin
 
-        // Gestion du stockage local des enregistrements
         function getLocalRecords() {
             return JSON.parse(localStorage.getItem('novalya_citizens') || '[]');
-        }
-
-        function saveLocalRecord(record) {
-            const records = getLocalRecords();
-            records.unshift(record);
-            localStorage.setItem('novalya_citizens', JSON.stringify(records));
         }
 
         function deleteRecord(index) {
@@ -43,78 +35,6 @@
             }
         }
 
-        function sanitizeInput(str) {
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML.trim();
-        }
-
-        async function submitIdentityDocument(event) {
-            event.preventDefault();
-
-            const submitBtn = document.getElementById("submitBtn");
-            const btnText = document.getElementById("btnText");
-            
-            const nomRP = sanitizeInput(document.getElementById("nomRP").value);
-            const prenomRP = sanitizeInput(document.getElementById("prenomRP").value);
-            const discordPseudo = sanitizeInput(document.getElementById("discordPseudo").value);
-            const discordID = sanitizeInput(document.getElementById("discordID").value);
-            const ageRP = parseInt(document.getElementById("ageRP").value, 10);
-
-            if (!/^\d{17,19}$/.test(discordID)) {
-                alert("❌ L'ID Discord saisi est invalide.");
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.classList.add("opacity-50", "cursor-not-allowed");
-            btnText.textContent = "Traitement en cours...";
-
-            const payload = { nomRP, prenomRP, ageRP, discordPseudo, discordID, date: new Date().toLocaleDateString('fr-FR') };
-
-            try {
-                const response = await fetch(BACKEND_API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-
-                saveLocalRecord(payload);
-
-                if (response.ok) {
-                    document.getElementById("documentForm").reset();
-                    alert("✅ Document d'identité enregistré et transmis au bot !");
-                } else {
-                    alert("⚠️ Enregistré en base locale, mais le bot n'a pas répondu.");
-                }
-            } catch (err) {
-                console.error("Erreur:", err);
-                saveLocalRecord(payload);
-                alert("⚠️ Document sauvegardé localement (Serveur bot hors-ligne).");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
-                btnText.textContent = "Valider le document & Synchroniser mon pseudo";
-                if (document.getElementById("adminSection").classList.contains("hidden") === false) {
-                    renderAdminPanel();
-                }
-            }
-        }
-
-        // Connexion au Panel Admin
-        function loginAdmin() {
-            const pwd = prompt("Entrez le mot de passe administrateur :");
-            if (pwd === ADMIN_PASSWORD) {
-                document.getElementById("adminLoginBtn").classList.add("hidden");
-                document.getElementById("adminSection").classList.remove("hidden");
-                renderAdminPanel();
-                window.location.hash = "#adminSection";
-            } else if (pwd !== null) {
-                alert("❌ Mot de passe incorrect.");
-            }
-        }
-
-        // Affichage des données dans le Panel Admin
         function renderAdminPanel() {
             const records = getLocalRecords();
             const tbody = document.getElementById("adminTableBody");
@@ -138,7 +58,7 @@
                     <td class="px-6 py-4 text-slate-400">${item.date || 'N/A'}</td>
                     <td class="px-6 py-4 flex gap-2">
                         <button onclick="forceSync('${item.nomRP}', '${item.prenomRP}', '${item.discordID}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition" title="Renvoyer au Bot">
-                            <i class="fa-solid fa-rotate"></i>
+                            <i class="fa-solid fa-rotate"></i> Synchroniser
                         </button>
                         <button onclick="deleteRecord(${index})" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs rounded-lg transition" title="Supprimer">
                             <i class="fa-solid fa-trash"></i>
@@ -149,7 +69,6 @@
             });
         }
 
-        // Action de resynchronisation depuis l'admin
         async function forceSync(nomRP, prenomRP, discordID) {
             try {
                 const response = await fetch(BACKEND_API_URL, {
@@ -163,6 +82,10 @@
                 alert("❌ Impossible de joindre le bot.");
             }
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderAdminPanel();
+        });
     </script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white">
@@ -179,13 +102,10 @@
                 </div>
                 <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
                     <a href="#accueil" class="hover:text-blue-400 transition">Accueil</a>
-                    <a href="#document" class="hover:text-blue-400 transition">Identité Civile</a>
+                    <a href="#adminSection" class="hover:text-blue-400 transition">Panel Admin</a>
                     <a href="#reglement" class="hover:text-blue-400 transition">Règlement</a>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button id="adminLoginBtn" onclick="loginAdmin()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition border border-slate-700">
-                        <i class="fa-solid fa-lock text-violet-400 mr-1"></i> Admin
-                    </button>
+                <div>
                     <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
                         <i class="fa-brands fa-discord"></i> Discord
                     </a>
@@ -205,11 +125,11 @@
                 Bienvenue sur <span class="text-gradient">Novalya RP</span>
             </h1>
             <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-                Remplissez votre document d'identité ci-dessous afin d'enregistrer votre citoyenneté et de synchroniser votre pseudo sur notre serveur Discord.
+                Consultez le registre des citoyens et le règlement officiel du serveur.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <a href="#document" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-xl shadow-blue-500/25 transition">
-                    📄 Remplir mon document RP
+                <a href="#adminSection" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-xl shadow-blue-500/25 transition">
+                    ⚙️ Ouvrir le Panel Admin
                 </a>
                 <a href="#reglement" class="w-full sm:w-auto px-8 py-4 rounded-xl glass hover:bg-slate-800/80 text-white font-semibold text-lg transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-book"></i> Lire le règlement
@@ -218,50 +138,8 @@
         </div>
     </section>
 
-    <!-- Formulaire de Document RP -->
-    <section id="document" class="py-24 bg-slate-900/50">
-        <div class="max-w-3xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">📄 Document d'Identité Civile</h2>
-                <p class="text-slate-400">Ce formulaire enregistre votre personnage et modifie votre pseudo sur Discord au format <code>Prénom Nom</code>.</p>
-            </div>
-            
-            <form id="documentForm" onsubmit="submitIdentityDocument(event)" class="glass p-8 rounded-2xl space-y-6 border border-blue-500/20">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                        <label for="nomRP" class="block text-sm font-medium text-slate-300 mb-2">Nom RP (Nom de jeu)</label>
-                        <input type="text" id="nomRP" required maxlength="30" placeholder="ex: Dupont" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="prenomRP" class="block text-sm font-medium text-slate-300 mb-2">Prénom RP (Prénom de jeu)</label>
-                        <input type="text" id="prenomRP" required maxlength="30" placeholder="ex: Jean" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div>
-                        <label for="ageRP" class="block text-sm font-medium text-slate-300 mb-2">Âge RP</label>
-                        <input type="number" id="ageRP" required min="18" max="99" placeholder="ex: 25" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="discordPseudo" class="block text-sm font-medium text-slate-300 mb-2">Pseudo Discord</label>
-                        <input type="text" id="discordPseudo" required maxlength="32" placeholder="ex: mon_pseudo" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="discordID" class="block text-sm font-medium text-slate-300 mb-2">ID Discord</label>
-                        <input type="text" id="discordID" required pattern="\d{17,19}" placeholder="ex: 123456789012345678" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2">
-                    <span id="btnText">Valider le document & Synchroniser mon pseudo</span>
-                </button>
-            </form>
-        </div>
-    </section>
-
-    <!-- PANEL ADMIN (MASQUÉ PAR DÉFAUT) -->
-    <section id="adminSection" class="py-24 bg-slate-900 border-t border-b border-violet-500/30 hidden">
+    <!-- PANEL ADMIN DIRECTEMENT ACCESSIBLE -->
+    <section id="adminSection" class="py-24 bg-slate-900 border-t border-b border-violet-500/30">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center mb-8">
                 <div>
