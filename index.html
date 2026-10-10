@@ -20,10 +20,9 @@
         }
     </style>
     <script>
-        // SÉCURITÉ : L'URL pointe uniquement vers VOTRE serveur API Backend (jamais vers Discord directement)
-        const BACKEND_API_URL = "https://votre-serveur-backend.com/api/register-identity";
+        // URL connectée directement à l'adresse IP de ton hébergement
+        const BACKEND_API_URL = "http://155.117.100.51:25578/api/register-identity";
 
-        // Nettoyage anti-XSS simple pour sécuriser les données saisies
         function sanitizeInput(str) {
             const temp = document.createElement('div');
             temp.textContent = str;
@@ -36,26 +35,23 @@
             const submitBtn = document.getElementById("submitBtn");
             const btnText = document.getElementById("btnText");
             
-            // Récupération et nettoyage des champs
             const nomRP = sanitizeInput(document.getElementById("nomRP").value);
             const prenomRP = sanitizeInput(document.getElementById("prenomRP").value);
             const discordPseudo = sanitizeInput(document.getElementById("discordPseudo").value);
             const discordID = sanitizeInput(document.getElementById("discordID").value);
             const ageRP = parseInt(document.getElementById("ageRP").value, 10);
 
-            // Validation de l'ID Discord (17 à 19 chiffres)
             if (!/^\d{17,19}$/.test(discordID)) {
                 alert("❌ L'ID Discord saisi est invalide (il doit comporter entre 17 et 19 chiffres).");
                 return;
             }
 
-            // Désactivation du bouton pour éviter le spam/double clic
+            // Désactivation du bouton pendant le traitement
             submitBtn.disabled = true;
             submitBtn.classList.add("opacity-50", "cursor-not-allowed");
-            btnText.textContent = "Traitement en cours...";
+            btnText.textContent = "Changement de pseudo en cours...";
 
             try {
-                // Envoi des données vers VOTRE backend
                 const response = await fetch(BACKEND_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -68,18 +64,18 @@
                     })
                 });
 
+                const result = await response.json();
+
                 if (response.ok) {
                     document.getElementById("documentForm").reset();
-                    alert("✅ Votre document d'identité a été transmis avec succès !");
+                    alert("✅ Votre document a été validé ! Votre pseudo Discord a été mis à jour.");
                 } else {
-                    const errorData = await response.json().catch(() => ({}));
-                    alert(`❌ Erreur : ${errorData.message || "Impossible d'enregistrer le document."}`);
+                    alert(`❌ Erreur : ${result.error || "Impossible d'enregistrer le document."}`);
                 }
             } catch (err) {
                 console.error("Erreur d'envoi:", err);
-                alert("❌ Une erreur réseau est survenue. Veuillez réessayer plus tard.");
+                alert("❌ Connexion impossible au bot. Vérifiez que le bot est bien démarré sur le serveur.");
             } finally {
-                // Réactivation du bouton
                 submitBtn.disabled = false;
                 submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
                 btnText.textContent = "Valider le document & Synchroniser mon pseudo";
@@ -142,7 +138,7 @@
         <div class="max-w-3xl mx-auto px-4">
             <div class="text-center mb-12">
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">📄 Document d'Identité Civile</h2>
-                <p class="text-slate-400">Ce formulaire enregistre votre personnage et envoie vos informations sur Discord pour mettre à jour votre pseudo serveur.</p>
+                <p class="text-slate-400">Ce formulaire enregistre votre personnage et modifie votre pseudo sur Discord au format <code>Prénom Nom</code>.</p>
             </div>
             
             <form id="documentForm" onsubmit="submitIdentityDocument(event)" class="glass p-8 rounded-2xl space-y-6 border border-blue-500/20">
@@ -174,7 +170,7 @@
 
                 <div class="p-4 rounded-xl bg-blue-900/20 border border-blue-500/30 text-xs text-slate-300">
                     <i class="fa-solid fa-robot text-blue-400 mr-1"></i>
-                    <strong>Connexion Bot & Webhook :</strong> La validation transmet votre fiche sur le salon de logs et demande à notre bot de modifier votre pseudo Discord au format <code>Prénom Nom</code>.
+                    <strong>Changement automatique :</strong> En cliquant sur valider, le bot modifiera immédiatement votre pseudo Discord sur le serveur.
                 </div>
 
                 <button type="submit" id="submitBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2">
@@ -193,18 +189,16 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Règle 1 -->
                 <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
                     <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> 1. Règles Générales & HRP</h3>
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
                         <li>Le respect entre joueurs et envers l'équipe du staff est primordial.</li>
-                        <li>Le HRP (Hors-Roleplay) en jeu vocal est strictly interdit.</li>
+                        <li>Le HRP (Hors-Roleplay) en jeu vocal est strictement interdit.</li>
                         <li>L'utilisation de bugs, glitchs ou mod menu entraîne un ban définitif.</li>
                         <li>Chaque joueur doit posséder un micro de bonne qualité.</li>
                     </ul>
                 </div>
 
-                <!-- Règle 2 -->
                 <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
                     <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-user-shield text-violet-400 mr-2"></i> 2. Fairplay & Immersion (RP)</h3>
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
@@ -215,7 +209,6 @@
                     </ul>
                 </div>
 
-                <!-- Règle 3 -->
                 <div class="glass p-6 rounded-2xl border-l-4 border-l-red-500">
                     <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-triangle-exclamation text-red-400 mr-2"></i> 3. Interdictions Strictes</h3>
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
@@ -225,12 +218,11 @@
                     </ul>
                 </div>
 
-                <!-- Règle 4 -->
                 <div class="glass p-6 rounded-2xl border-l-4 border-l-emerald-500">
                     <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-address-card text-emerald-400 mr-2"></i> 4. Identité & Pseudo</h3>
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
                         <li>Votre pseudo Discord doit correspondre exactement au format : <code>Prénom Nom</code>.</li>
-                        <li>Les noms de célébrités, insultants ou irréalistes sont strictement interdits.</li>
+                        <li>Les noms de célébrités, insultants ou irréalistes sont strictly interdits.</li>
                         <li>En cas de changement de nom RP, vous devez re-soumettre votre document d'identité sur le site.</li>
                     </ul>
                 </div>
