@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novalya RP - Registre Officiel & Serveur Nova-Life</title>
+    <title>Novalya RP - Registre Civile & Règlement Officiel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -21,9 +21,11 @@
     </style>
     <script>
         const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1558265104238121120/Tc3d0M8VtWqvEEORiGLiWS7g79c_YTv1Aq7rceipnNleaBgGTzaxNjh5d2IXcupI8VbE";
+        
+        // Remplacez par l'URL de votre serveur Bot quand il sera prêt (ex: http://votre-ip:3000/api/rename)
+        const BOT_API_URL = "https://votre-bot-api.com/api/register-identity";
 
-        // Fonction d'envoi du document RP sur Discord via Webhook
-        function submitIdentityDocument(event) {
+        async function submitIdentityDocument(event) {
             event.preventDefault();
 
             const nomRP = document.getElementById("nomRP").value.trim();
@@ -32,51 +34,60 @@
             const discordID = document.getElementById("discordID").value.trim();
             const ageRP = document.getElementById("ageRP").value.trim();
 
-            const formattedNickname = `${prenomRP} ${nomRP} [${discordID}]`;
+            const formattedNickname = `${prenomRP}${nomRP}`;
 
-            const payload = {
-                content: `<@${discordID}>`, // Mentionne le joueur sur Discord
+            // 1. Log envoyé sur Discord via Webhook
+            const webhookPayload = {
+                content: `<@${discordID}>`,
                 embeds: [{
-                    title: "📄 REGISTRE D'IDENTITÉ CIVILE - NOVALYA RP",
-                    description: "Un joueur a complété et validé son document d'identité civile depuis le site web.",
+                    title: "📄 NOUVEL ENREGISTREMENT DE CITOYENNETÉ - NOVALYA RP",
+                    description: "Un joueur a soumis son document d'identité sur le site web.",
                     color: 3447003,
-                    thumbnail: {
-                        url: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                    },
                     fields: [
                         { name: "👤 Nom RP", value: nomRP, inline: true },
                         { name: "👤 Prénom RP", value: prenomRP, inline: true },
                         { name: "🎂 Âge RP", value: ageRP + " ans", inline: true },
                         { name: "🎧 Pseudo Discord", value: discordPseudo, inline: true },
                         { name: "🆔 ID Discord", value: discordID, inline: true },
-                        { name: "🏷️ Pseudo Discord suggéré", value: `\`${formattedNickname}\``, inline: false }
+                        { name: "🏷️ Nouveau Pseudo Serveur", value: `\`${formattedNickname}\``, inline: false }
                     ],
                     footer: { text: "Novalya RP • Préfecture d'Amboise" },
                     timestamp: new Date().toISOString()
                 }]
             };
 
-            fetch(DISCORD_WEBHOOK_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            }).then(response => {
-                if (response.ok) {
-                    document.getElementById("documentForm").reset();
-                    alert("✅ Votre document d'identité a été enregistré et transmis à la Préfecture sur Discord !");
-                } else {
-                    alert("❌ Une erreur est survenue lors de l'envoi du document.");
-                }
-            }).catch(err => {
+            // Envoi Webhook
+            try {
+                await fetch(DISCORD_WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(webhookPayload)
+                });
+            } catch (err) {
                 console.error("Erreur Webhook:", err);
-                alert("❌ Impossible d'envoyer le document.");
-            });
-        }
+            }
 
-        function copyServerIP() {
-            const ip = "connect.novalya-rp.fr";
-            navigator.clipboard.writeText(ip);
-            alert("Adresse du serveur copiée : " + ip);
+            // 2. Envoi des données vers le Bot Discord (pour changement automatique du pseudo)
+            if (BOT_API_URL && !BOT_API_URL.includes("votre-bot-api.com")) {
+                try {
+                    await fetch(BOT_API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            discordId: discordID,
+                            nickname: formattedNickname,
+                            nomRP: nomRP,
+                            prenomRP: prenomRP,
+                            ageRP: ageRP
+                        })
+                    });
+                } catch (err) {
+                    console.error("Erreur API Bot:", err);
+                }
+            }
+
+            document.getElementById("documentForm").reset();
+            alert("✅ Votre document d'identité a été enregistré ! Le staff et le bot Discord vont traiter la mise à jour de votre pseudo.");
         }
     </script>
 </head>
@@ -94,8 +105,8 @@
                 </div>
                 <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
                     <a href="#accueil" class="hover:text-blue-400 transition">Accueil</a>
-                    <a href="#document" class="hover:text-blue-400 transition">Document d'Identité</a>
-                    <a href="#rejoindre" class="hover:text-blue-400 transition">Nous rejoindre</a>
+                    <a href="#document" class="hover:text-blue-400 transition">Identité Civile</a>
+                    <a href="#reglement" class="hover:text-blue-400 transition">Règlement</a>
                 </div>
                 <div>
                     <a href="https://discord.gg/RGBuPNVmmE" target="_blank" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
@@ -117,35 +128,35 @@
                 Bienvenue sur <span class="text-gradient">Novalya RP</span>
             </h1>
             <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-                Remplissez votre document d'identité ci-dessous afin d'enregistrer votre citoyenneté à la préfecture d'Amboise.
+                Remplissez votre document d'identité ci-dessous afin d'enregistrer votre citoyenneté et de synchroniser votre pseudo sur notre serveur Discord.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <a href="#document" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-xl shadow-blue-500/25 transition">
                     📄 Remplir mon document RP
                 </a>
-                <button onclick="copyServerIP()" class="w-full sm:w-auto px-8 py-4 rounded-xl glass hover:bg-slate-800/80 text-white font-semibold text-lg transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-copy"></i> Copier l'IP
-                </button>
+                <a href="#reglement" class="w-full sm:w-auto px-8 py-4 rounded-xl glass hover:bg-slate-800/80 text-white font-semibold text-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-book"></i> Lire le règlement
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Formulaire de Document RP / Identité Civil -->
+    <!-- Formulaire de Document RP -->
     <section id="document" class="py-24 bg-slate-900/50">
         <div class="max-w-3xl mx-auto px-4">
             <div class="text-center mb-12">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">📄 Document d'Identité RP</h2>
-                <p class="text-slate-400">Complétez vos informations pour enregistrer votre personnage auprès des services municipaux d'Amboise.</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">📄 Document d'Identité Civile</h2>
+                <p class="text-slate-400">Ce formulaire enregistre votre personnage et envoie vos informations sur Discord pour mettre à jour votre pseudo serveur.</p>
             </div>
             
             <form id="documentForm" onsubmit="submitIdentityDocument(event)" class="glass p-8 rounded-2xl space-y-6 border border-blue-500/20">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Nom de jeu (Nom RP)</label>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Nom RP (Nom de jeu)</label>
                         <input type="text" id="nomRP" required placeholder="ex: Dupont" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Prénom de jeu (Prénom RP)</label>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Prénom RP (Prénom de jeu)</label>
                         <input type="text" id="prenomRP" required placeholder="ex: Jean" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
                     </div>
                 </div>
@@ -166,14 +177,68 @@
                 </div>
 
                 <div class="p-4 rounded-xl bg-blue-900/20 border border-blue-500/30 text-xs text-slate-300">
-                    <i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>
-                    <strong>Information :</strong> En validant ce document, une fiche sera générée sur le serveur Discord de Novalya RP pour vérification par les modérateurs.
+                    <i class="fa-solid fa-robot text-blue-400 mr-1"></i>
+                    <strong>Connexion Bot & Webhook :</strong> La validation transmet votre fiche sur le salon de logs et demande à notre bot de modifier votre pseudo Discord au format <code>Prénom Nom</code>.
                 </div>
 
                 <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition">
-                    Enregistrer et transmettre le document
+                    Valider le document & Synchroniser mon pseudo
                 </button>
             </form>
+        </div>
+    </section>
+
+    <!-- Section Règlement -->
+    <section id="reglement" class="py-24">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">📜 Règlement du Serveur Novalya RP</h2>
+                <p class="text-slate-400">Le respect de ces règles est obligatoire sous peine de sanctions administratives.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Règle 1 -->
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
+                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> 1. Règles Générales & HRP</h3>
+                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
+                        <li>Le respect entre joueurs et envers l'équipe du staff est primordial.</li>
+                        <li>Le HRP (Hors-Roleplay) en jeu vocal est strictement interdit.</li>
+                        <li>L'utilisation de bugs, glitchs ou mod menu entraîne un ban définitif.</li>
+                        <li>Chaque joueur doit posséder un micro de bonne qualité.</li>
+                    </ul>
+                </div>
+
+                <!-- Règle 2 -->
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
+                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-user-shield text-violet-400 mr-2"></i> 2. Fairplay & Immersion (RP)</h3>
+                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
+                        <li><strong>FearRP :</strong> Vous devez valoriser votre vie face à une arme ou une menace réelle.</li>
+                        <li><strong>PainRP :</strong> Simulez correctement la douleur en cas d'accident ou de blessure.</li>
+                        <li><strong>NoWinRP :</strong> Acceptez de perdre une scène RP pour maintenir un bon niveau de jeu.</li>
+                        <li>Les propos discriminatoires, racistes ou haineux sont immédiatement sanctionnés.</li>
+                    </ul>
+                </div>
+
+                <!-- Règle 3 -->
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-red-500">
+                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-triangle-exclamation text-red-400 mr-2"></i> 3. Interdictions Strictes</h3>
+                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
+                        <li><strong>CQT / Freekill :</strong> Tuer un joueur sans motif valable ou scène construite est interdit.</li>
+                        <li><strong>VDM (Vehicle Deathmatch) :</strong> Utiliser un véhicule comme arme est proscrit.</li>
+                        <li><strong>Streamhack / Metagaming :</strong> Utiliser des infos HRP en jeu est strictement interdit.</li>
+                    </ul>
+                </div>
+
+                <!-- Règle 4 -->
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-emerald-500">
+                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-address-card text-emerald-400 mr-2"></i> 4. Identité & Pseudo</h3>
+                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
+                        <li>Votre pseudo Discord doit correspondre exactement au format : <code>Prénom Nom</code>.</li>
+                        <li>Les noms de célébrités, insultants ou irréalistes sont strictement interdits.</li>
+                        <li>En cas de changement de nom RP, vous devez re-soumettre votre document d'identité sur le site.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </section>
 
