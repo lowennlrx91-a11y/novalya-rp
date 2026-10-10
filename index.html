@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novalya RP - Panel Administration</title>
+    <title>Novalya RP - Dashboard & Panel Administration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -21,82 +21,20 @@
     </style>
     <script>
         const BACKEND_API_URL = "http://155.117.100.51:25578/api/register-identity";
-        const ADMIN_PASSWORD = "Novalya2026!"; // Mot de passe du panel admin
+        const ADMIN_PASSWORD = "Novalya2026!"; // Mot de passe affiché sur le site
 
         function getLocalRecords() {
             return JSON.parse(localStorage.getItem('novalya_citizens') || '[]');
         }
 
-        function getSanctions() {
-            return JSON.parse(localStorage.getItem('novalya_sanctions') || '[]');
-        }
-
-        function verifyPassword() {
-            const pwdInput = document.getElementById("adminPasswordInput").value;
-            if (pwdInput === ADMIN_PASSWORD) {
-                document.getElementById("loginCard").classList.add("hidden");
-                document.getElementById("adminDashboard").classList.remove("hidden");
-                renderAdminPanel();
-            } else {
-                alert("❌ Mot de passe incorrect.");
-            }
-        }
-
-        function renderAdminPanel() {
+        function saveLocalRecord(record) {
             const records = getLocalRecords();
-            const sanctions = getSanctions();
-            
-            document.getElementById("totalCitizens").textContent = records.length;
-            document.getElementById("totalWarns").textContent = sanctions.filter(s => s.type === "WARN").length;
-            document.getElementById("totalBans").textContent = sanctions.filter(s => s.type === "BAN").length;
-
-            renderTable(records);
-            renderSanctionsTable(sanctions);
-        }
-
-        function renderTable(data) {
-            const tbody = document.getElementById("adminTableBody");
-            tbody.innerHTML = "";
-
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-500">Aucun citoyen trouvé dans le registre.</td></tr>`;
-                return;
-            }
-
-            data.forEach((item, index) => {
-                const tr = document.createElement("tr");
-                tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition";
-                tr.innerHTML = `
-                    <td class="px-6 py-4 font-semibold text-white">${item.prenomRP || ''} ${item.nomRP || ''}</td>
-                    <td class="px-6 py-4">${item.ageRP || 'N/A'} ans</td>
-                    <td class="px-6 py-4 text-slate-400">${item.discordPseudo || 'Inconnu'} <br><span class="text-xs text-blue-400">(${item.discordID})</span></td>
-                    <td class="px-6 py-4 text-slate-400">${item.date || 'N/A'}</td>
-                    <td class="px-6 py-4 flex gap-2">
-                        <button onclick="forceSync('${item.nomRP}', '${item.prenomRP}', '${item.discordID}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition" title="Renommer via Bot">
-                            <i class="fa-solid fa-rotate"></i> Sync
-                        </button>
-                        <button onclick="deleteRecord(${index})" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs rounded-lg transition" title="Supprimer">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function filterCitizens() {
-            const query = document.getElementById("searchCitizen").value.toLowerCase();
-            const records = getLocalRecords();
-            const filtered = records.filter(item => 
-                (item.nomRP && item.nomRP.toLowerCase().includes(query)) ||
-                (item.prenomRP && item.prenomRP.toLowerCase().includes(query)) ||
-                (item.discordID && item.discordID.includes(query))
-            );
-            renderTable(filtered);
+            records.unshift(record);
+            localStorage.setItem('novalya_citizens', JSON.stringify(records));
         }
 
         function deleteRecord(index) {
-            if (confirm("Supprimer ce citoyen du registre ?")) {
+            if (confirm("Voulez-vous vraiment supprimer ce citoyen du registre local ?")) {
                 const records = getLocalRecords();
                 records.splice(index, 1);
                 localStorage.setItem('novalya_citizens', JSON.stringify(records));
@@ -104,74 +42,104 @@
             }
         }
 
-        function clearAllData() {
-            if (confirm("⚠️ ATTENTION : Cela va effacer TOUT le registre local. Continuer ?")) {
-                localStorage.removeItem('novalya_citizens');
-                localStorage.removeItem('novalya_sanctions');
+        // Connexion au Panel Admin
+        function loginAdmin(autoInput = false) {
+            let pwd = autoInput ? ADMIN_PASSWORD : prompt("Entrez le mot de passe administrateur :", ADMIN_PASSWORD);
+            if (pwd === ADMIN_PASSWORD) {
+                document.getElementById("loginCard").classList.add("hidden");
+                document.getElementById("adminSection").classList.remove("hidden");
                 renderAdminPanel();
+            } else if (pwd !== null) {
+                alert("❌ Mot de passe incorrect.");
             }
         }
 
+        // Ajout manuel d'un citoyen depuis le Panel Admin
+        async function addCitizenAdmin(e) {
+            e.preventDefault();
+            const nomRP = document.getElementById("adminNomRP").value.trim();
+            const prenomRP = document.getElementById("adminPrenomRP").value.trim();
+            const ageRP = parseInt(document.getElementById("adminAgeRP").value, 10);
+            const discordPseudo = document.getElementById("adminDiscordPseudo").value.trim();
+            const discordID = document.getElementById("adminDiscordID").value.trim();
+
+            if (!/^\d{17,19}$/.test(discordID)) {
+                alert("❌ ID Discord invalide (doit comporter entre 17 et 19 chiffres).");
+                return;
+            }
+
+            const payload = { nomRP, prenomRP, ageRP, discordPseudo, discordID, date: new Date().toLocaleDateString('fr-FR') };
+            saveLocalRecord(payload);
+
+            try {
+                await fetch(BACKEND_API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                alert("✅ Citoyen ajouté et requête envoyée au bot !");
+            } catch (err) {
+                alert("⚠️ Citoyen enregistré localement (Bot hors-ligne).");
+            }
+
+            document.getElementById("addCitizenForm").reset();
+            renderAdminPanel();
+        }
+
+        // Action de resynchronisation du pseudo via le bot
         async function forceSync(nomRP, prenomRP, discordID) {
             try {
                 const response = await fetch(BACKEND_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nomRP, prenomRP, ageRP: 20, discordPseudo: "Admin", discordID })
+                    body: JSON.stringify({ nomRP, prenomRP, ageRP: 20, discordPseudo: "AdminSync", discordID })
                 });
-                if (response.ok) alert("✅ Ordre de modification du pseudo envoyé au bot !");
+                if (response.ok) alert("✅ Signal de modification envoyé au bot !");
                 else alert("❌ Erreur de réponse du serveur bot.");
             } catch (err) {
-                alert("❌ Impossible de joindre le bot Python.");
+                alert("❌ Impossible de joindre le bot.");
             }
         }
 
-        async function quickRename(event) {
-            event.preventDefault();
-            const discordID = document.getElementById("quickDiscordID").value.trim();
-            const newName = document.getElementById("quickName").value.trim();
+        // Affichage des données et statistiques
+        function renderAdminPanel() {
+            const records = getLocalRecords();
+            const tbody = document.getElementById("adminTableBody");
+            const totalCount = document.getElementById("totalCitizens");
+            const avgAge = document.getElementById("avgAge");
 
-            const parts = newName.split(" ");
-            const prenomRP = parts[0] || newName;
-            const nomRP = parts.slice(1).join(" ") || "";
+            totalCount.textContent = records.length;
+            
+            if (records.length > 0) {
+                const totalAge = records.reduce((acc, curr) => acc + (curr.ageRP || 0), 0);
+                avgAge.textContent = Math.round(totalAge / records.length) + " ans";
+            } else {
+                avgAge.textContent = "N/A";
+            }
 
-            await forceSync(nomRP, prenomRP, discordID);
-            document.getElementById("quickRenameForm").reset();
-        }
-
-        function addSanction(event) {
-            event.preventDefault();
-            const targetID = document.getElementById("sanctionDiscordID").value.trim();
-            const type = document.getElementById("sanctionType").value;
-            const reason = document.getElementById("sanctionReason").value.trim();
-
-            const sanctions = getSanctions();
-            sanctions.unshift({ targetID, type, reason, date: new Date().toLocaleDateString('fr-FR') });
-            localStorage.setItem('novalya_sanctions', JSON.stringify(sanctions));
-
-            alert(`✅ Sanction [${type}] enregistrée pour l'utilisateur ${targetID}.`);
-            document.getElementById("sanctionForm").reset();
-            renderAdminPanel();
-        }
-
-        function renderSanctionsTable(sanctions) {
-            const tbody = document.getElementById("sanctionsTableBody");
             tbody.innerHTML = "";
 
-            if (sanctions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-slate-500">Aucune sanction enregistrée.</td></tr>`;
+            if (records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-500">Aucun citoyen dans le registre. Utilisez le formulaire ci-dessous pour en ajouter un.</td></tr>`;
                 return;
             }
 
-            sanctions.forEach((s) => {
+            records.forEach((item, index) => {
                 const tr = document.createElement("tr");
                 tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition";
-                const badgeColor = s.type === "BAN" ? "bg-red-500/20 text-red-400 border-red-500/30" : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
                 tr.innerHTML = `
-                    <td class="px-6 py-4 text-slate-300 font-mono">${s.targetID}</td>
-                    <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor}">${s.type}</span></td>
-                    <td class="px-6 py-4 text-slate-300">${s.reason}</td>
-                    <td class="px-6 py-4 text-slate-400">${s.date}</td>
+                    <td class="px-6 py-4 font-semibold text-white">${item.prenomRP} ${item.nomRP}</td>
+                    <td class="px-6 py-4">${item.ageRP} ans</td>
+                    <td class="px-6 py-4 text-slate-400">${item.discordPseudo} <br><span class="text-xs text-blue-400">(${item.discordID})</span></td>
+                    <td class="px-6 py-4 text-slate-400">${item.date || 'N/A'}</td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="forceSync('${item.nomRP}', '${item.prenomRP}', '${item.discordID}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition flex items-center gap-1" title="Renommer via Bot">
+                            <i class="fa-solid fa-rotate"></i> Sync
+                        </button>
+                        <button onclick="deleteRecord(${index})" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs rounded-lg transition" title="Supprimer">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -191,7 +159,8 @@
                     <span class="font-extrabold text-2xl tracking-wider text-gradient">NOVALYA RP</span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
-                    <a href="#admin" class="hover:text-blue-400 transition">Panel Admin</a>
+                    <a href="#accueil" class="hover:text-blue-400 transition">Accueil</a>
+                    <a href="#adminSection" class="hover:text-blue-400 transition">Panel Admin</a>
                     <a href="#reglement" class="hover:text-blue-400 transition">Règlement</a>
                 </div>
                 <div>
@@ -203,182 +172,134 @@
         </div>
     </nav>
 
-    <!-- Section Admin Principal -->
-    <section id="admin" class="min-h-screen pt-32 pb-24">
-        <div class="max-w-7xl mx-auto px-4">
+    <!-- Bienvenue / Banner -->
+    <section id="accueil" class="relative pt-32 pb-16 overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/30 via-slate-950 to-slate-950"></div>
+        <div class="relative max-w-6xl mx-auto px-4 text-center z-10">
+            <span class="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest inline-block mb-4">
+                Serveur Nova-Life • Carte Amboise
+            </span>
+            <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white mb-4">
+                Bienvenue sur le Portail <span class="text-gradient">Novalya RP</span>
+            </h1>
+            <p class="text-slate-400 max-w-2xl mx-auto mb-8">
+                Espace officiel de gestion du serveur RP, du registre civil des citoyens et du règlement officiel.
+            </p>
+        </div>
+    </section>
+
+    <!-- Zone de Connexion / Accès Direct -->
+    <section class="max-w-4xl mx-auto px-4 mb-16">
+        <div id="loginCard" class="glass p-8 rounded-2xl border border-violet-500/30 text-center space-y-6">
+            <div class="w-16 h-16 rounded-2xl bg-violet-600/20 text-violet-400 flex items-center justify-center text-3xl mx-auto">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-2">Accès au Panel Administration</h2>
+                <p class="text-slate-400 text-sm">Mot de passe par défaut configuré : <code class="bg-slate-800 text-violet-400 px-3 py-1 rounded-lg border border-slate-700 font-mono text-base">Novalya2026!</code></p>
+            </div>
+            <button onclick="loginAdmin(true)" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 transition">
+                <i class="fa-solid fa-key mr-2"></i> Déverrouiller le Panel Admin
+            </button>
+        </div>
+    </section>
+
+    <!-- PANEL ADMIN PRINCIPAL -->
+    <section id="adminSection" class="py-12 bg-slate-900/60 border-t border-b border-violet-500/20 hidden">
+        <div class="max-w-6xl mx-auto px-4 space-y-8">
             
-            <!-- Carte de Connexion Sécurisée -->
-            <div id="loginCard" class="max-w-md mx-auto glass p-8 rounded-2xl border border-violet-500/30 shadow-2xl text-center">
-                <div class="w-16 h-16 rounded-2xl bg-violet-600/20 border border-violet-500/40 flex items-center justify-center mx-auto mb-4 text-violet-400 text-2xl">
-                    <i class="fa-solid fa-lock"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white mb-2">Accès Panel Administration</h2>
-                <p class="text-slate-400 text-sm mb-6">Veuillez saisir le mot de passe administrateur pour déverrouiller la gestion du serveur.</p>
-                <div class="space-y-4">
-                    <input type="password" id="adminPasswordInput" placeholder="Mot de passe admin" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-violet-500 text-center font-mono">
-                    <button onclick="verifyPassword()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold transition shadow-lg shadow-blue-600/30">
-                        Connexion au Panel
-                    </button>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-user-gear text-violet-500"></i> Panel de Gestion Admin
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-1">Gérez le registre des citoyens et la synchronisation des pseudos Discord.</p>
                 </div>
             </div>
 
-            <!-- Dashboard Admin (Caché tant que non authentifié) -->
-            <div id="adminDashboard" class="hidden space-y-10">
-                
-                <!-- Header & Stats -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 class="text-4xl font-black text-white flex items-center gap-3">
-                            <i class="fa-solid fa-user-gear text-violet-500"></i> Panel Administrateur
-                        </h1>
-                        <p class="text-slate-400 mt-1">Gestion centrale du registre civil, modération et commandes bot Discord.</p>
-                    </div>
-                    <button onclick="clearAllData()" class="px-4 py-2 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 text-xs font-semibold transition flex items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Purger le registre local
+            <!-- Statistiques du serveur -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
+                    <p class="text-slate-400 text-sm mb-1">Total Citoyens</p>
+                    <p id="totalCitizens" class="text-3xl font-extrabold text-white">0</p>
+                </div>
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
+                    <p class="text-slate-400 text-sm mb-1">Moyenne d'Âge RP</p>
+                    <p id="avgAge" class="text-3xl font-extrabold text-white">N/A</p>
+                </div>
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-emerald-500">
+                    <p class="text-slate-400 text-sm mb-1">Statut API Bot</p>
+                    <p class="text-lg font-bold text-emerald-400 flex items-center gap-2 mt-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Connecté (155.117.100.51)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Formulaire d'ajout rapide de citoyen -->
+            <div class="glass p-6 rounded-2xl border border-blue-500/20">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-blue-400"></i> Ajouter / Renommer un Citoyen Manuellement
+                </h3>
+                <form id="addCitizenForm" onsubmit="addCitizenAdmin(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <input type="text" id="adminNomRP" placeholder="Nom RP" required class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
+                    <input type="text" id="adminPrenomRP" placeholder="Prénom RP" required class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
+                    <input type="number" id="adminAgeRP" placeholder="Âge RP" required min="18" max="99" class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
+                    <input type="text" id="adminDiscordPseudo" placeholder="Pseudo Discord" required class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
+                    <input type="text" id="adminDiscordID" placeholder="ID Discord (ex: 123456789...)" required pattern="\d{17,19}" class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
+                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check"></i> Enregistrer & Synchroniser
                     </button>
+                </form>
+            </div>
+
+            <!-- Tableau des Registres -->
+            <div class="glass rounded-2xl overflow-hidden border border-slate-800">
+                <div class="p-4 bg-slate-800/50 border-b border-slate-800">
+                    <h3 class="font-bold text-white">Registre Civil des Citoyens</h3>
                 </div>
-
-                <!-- Cartes de statistiques -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
-                        <span class="text-xs uppercase text-slate-400 font-semibold">Citoyens Enregistrés</span>
-                        <div id="totalCitizens" class="text-3xl font-black text-white mt-2">0</div>
-                    </div>
-                    <div class="glass p-6 rounded-2xl border-l-4 border-l-yellow-500">
-                        <span class="text-xs uppercase text-slate-400 font-semibold">Avertissements</span>
-                        <div id="totalWarns" class="text-3xl font-black text-yellow-400 mt-2">0</div>
-                    </div>
-                    <div class="glass p-6 rounded-2xl border-l-4 border-l-red-500">
-                        <span class="text-xs uppercase text-slate-400 font-semibold">Bannissements</span>
-                        <div id="totalBans" class="text-3xl font-black text-red-400 mt-2">0</div>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+                            <tr>
+                                <th class="px-6 py-4">Nom RP</th>
+                                <th class="px-6 py-4">Âge</th>
+                                <th class="px-6 py-4">Discord (ID)</th>
+                                <th class="px-6 py-4">Date Enregistrement</th>
+                                <th class="px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <!-- Rempli dynamiquement en JS -->
+                        </tbody>
+                    </table>
                 </div>
-
-                <!-- Grille d'Outils Rapides -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    
-                    <!-- Outil 1 : Forcer le changement de pseudo -->
-                    <div class="glass p-6 rounded-2xl border border-blue-500/20">
-                        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-signature text-blue-400"></i> Modification Rapide de Pseudo
-                        </h3>
-                        <form id="quickRenameForm" onsubmit="quickRename(event)" class="space-y-4">
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">ID Discord du Joueur</label>
-                                <input type="text" id="quickDiscordID" required pattern="\d{17,19}" placeholder="ex: 123456789012345678" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Nouveau Pseudo RP (Prénom Nom)</label>
-                                <input type="text" id="quickName" required placeholder="ex: Jean Dupont" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                            </div>
-                            <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition">
-                                Appliquer la modification via le Bot
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Outil 2 : Ajouter une Sanction -->
-                    <div class="glass p-6 rounded-2xl border border-red-500/20">
-                        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-gavel text-red-400"></i> Module de Sanction Modération
-                        </h3>
-                        <form id="sanctionForm" onsubmit="addSanction(event)" class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs text-slate-400 mb-1">ID Discord</label>
-                                    <input type="text" id="sanctionDiscordID" required pattern="\d{17,19}" placeholder="ID Joueur" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-red-500">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-slate-400 mb-1">Type de Sanction</label>
-                                    <select id="sanctionType" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-red-500">
-                                        <option value="WARN">Avertissement (Warn)</option>
-                                        <option value="BAN">Bannissement</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Raison de la sanction</label>
-                                <input type="text" id="sanctionReason" required placeholder="ex: NoWinRP répétitif / HRP Vocal" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-red-500">
-                            </div>
-                            <button type="submit" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition">
-                                Enregistrer la Sanction
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Tableau du Registre Civil -->
-                <div class="glass rounded-2xl overflow-hidden border border-slate-800 p-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-address-book text-violet-400 mr-2"></i> Registre Civil des Citoyens</h3>
-                        <input type="text" id="searchCitizen" oninput="filterCitizens()" placeholder="🔍 Rechercher un Nom ou ID..." class="px-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-violet-500 w-full sm:w-64">
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-slate-300">
-                            <thead class="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700">
-                                <tr>
-                                    <th class="px-6 py-4">Nom RP</th>
-                                    <th class="px-6 py-4">Âge</th>
-                                    <th class="px-6 py-4">Discord (ID)</th>
-                                    <th class="px-6 py-4">Date</th>
-                                    <th class="px-6 py-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminTableBody">
-                                <!-- Rempli dynamiquement -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tableau des Sanctions -->
-                <div class="glass rounded-2xl overflow-hidden border border-slate-800 p-6">
-                    <h3 class="text-xl font-bold text-white mb-6"><i class="fa-solid fa-shield-halved text-red-400 mr-2"></i> Historique des Sanctions</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-slate-300">
-                            <thead class="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700">
-                                <tr>
-                                    <th class="px-6 py-4">ID Discord</th>
-                                    <th class="px-6 py-4">Type</th>
-                                    <th class="px-6 py-4">Raison</th>
-                                    <th class="px-6 py-4">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sanctionsTableBody">
-                                <!-- Rempli dynamiquement -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
             </div>
         </div>
     </section>
 
     <!-- Section Règlement -->
-    <section id="reglement" class="py-24 bg-slate-900/50">
+    <section id="reglement" class="py-20">
         <div class="max-w-5xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">📜 Règlement Officiel Novalya RP</h2>
-                <p class="text-slate-400">Règles fondamentales régissant le serveur d'Amboise.</p>
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-extrabold text-white mb-2">📜 Règlement Officiel du Serveur</h2>
+                <p class="text-slate-400 text-sm">Le respect de ces règles est obligatoire sous peine de sanction administrative.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
-                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> 1. Règles Générales & HRP</h3>
+                    <h3 class="text-lg font-bold text-white mb-3"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> 1. Règles Générales</h3>
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
-                        <li>Respect obligatoire envers tous les joueurs et membres du staff.</li>
-                        <li>Interdiction stricte du HRP en jeu vocal.</li>
-                        <li>Toute triche ou utilisation de glitchs est passible de ban permanent.</li>
+                        <li>Le HRP (Hors-Roleplay) vocal en jeu est interdit.</li>
+                        <li>Utilisation de mods/glitchs = bannissement définitif.</li>
                     </ul>
                 </div>
 
                 <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
-                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-user-shield text-violet-400 mr-2"></i> 2. Fairplay & Immersion (RP)</h3>
+                    <h3 class="text-lg font-bold text-white mb-3"><i class="fa-solid fa-user-shield text-violet-400 mr-2"></i> 2. Immersion & Fairplay</h3>
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
-                        <li><strong>FearRP :</strong> Valorisez votre vie à tout moment.</li>
-                        <li><strong>PainRP :</strong> Simulez les blessures et accidents avec cohérence.</li>
+                        <li><strong>FearRP :</strong> Respectez la valeur de votre vie en scène.</li>
+                        <li><strong>PainRP :</strong> Simulez les blessures et accidents.</li>
                     </ul>
                 </div>
             </div>
