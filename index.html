@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novalya RP - Registre Civil & Règlement Officiel</title>
+    <title>Novalya RP - Registre Civil & Administration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -20,8 +20,28 @@
         }
     </style>
     <script>
-        // URL connectée directement à l'adresse IP de ton hébergement
         const BACKEND_API_URL = "http://155.117.100.51:25578/api/register-identity";
+        const ADMIN_PASSWORD = "Novalya2026!"; // Mot de passe du panel admin
+
+        // Gestion du stockage local des enregistrements
+        function getLocalRecords() {
+            return JSON.parse(localStorage.getItem('novalya_citizens') || '[]');
+        }
+
+        function saveLocalRecord(record) {
+            const records = getLocalRecords();
+            records.unshift(record);
+            localStorage.setItem('novalya_citizens', JSON.stringify(records));
+        }
+
+        function deleteRecord(index) {
+            if (confirm("Voulez-vous vraiment supprimer ce citoyen du registre local ?")) {
+                const records = getLocalRecords();
+                records.splice(index, 1);
+                localStorage.setItem('novalya_citizens', JSON.stringify(records));
+                renderAdminPanel();
+            }
+        }
 
         function sanitizeInput(str) {
             const temp = document.createElement('div');
@@ -42,43 +62,105 @@
             const ageRP = parseInt(document.getElementById("ageRP").value, 10);
 
             if (!/^\d{17,19}$/.test(discordID)) {
-                alert("❌ L'ID Discord saisi est invalide (il doit comporter entre 17 et 19 chiffres).");
+                alert("❌ L'ID Discord saisi est invalide.");
                 return;
             }
 
-            // Désactivation du bouton pendant le traitement
             submitBtn.disabled = true;
             submitBtn.classList.add("opacity-50", "cursor-not-allowed");
-            btnText.textContent = "Changement de pseudo en cours...";
+            btnText.textContent = "Traitement en cours...";
+
+            const payload = { nomRP, prenomRP, ageRP, discordPseudo, discordID, date: new Date().toLocaleDateString('fr-FR') };
 
             try {
                 const response = await fetch(BACKEND_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        nomRP,
-                        prenomRP,
-                        ageRP,
-                        discordPseudo,
-                        discordID
-                    })
+                    body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
+                saveLocalRecord(payload);
 
                 if (response.ok) {
                     document.getElementById("documentForm").reset();
-                    alert("✅ Votre document a été validé ! Votre pseudo Discord a été mis à jour.");
+                    alert("✅ Document d'identité enregistré et transmis au bot !");
                 } else {
-                    alert(`❌ Erreur : ${result.error || "Impossible d'enregistrer le document."}`);
+                    alert("⚠️ Enregistré en base locale, mais le bot n'a pas répondu.");
                 }
             } catch (err) {
-                console.error("Erreur d'envoi:", err);
-                alert("❌ Connexion impossible au bot. Vérifiez que le bot est bien démarré sur le serveur.");
+                console.error("Erreur:", err);
+                saveLocalRecord(payload);
+                alert("⚠️ Document sauvegardé localement (Serveur bot hors-ligne).");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
                 btnText.textContent = "Valider le document & Synchroniser mon pseudo";
+                if (document.getElementById("adminSection").classList.contains("hidden") === false) {
+                    renderAdminPanel();
+                }
+            }
+        }
+
+        // Connexion au Panel Admin
+        function loginAdmin() {
+            const pwd = prompt("Entrez le mot de passe administrateur :");
+            if (pwd === ADMIN_PASSWORD) {
+                document.getElementById("adminLoginBtn").classList.add("hidden");
+                document.getElementById("adminSection").classList.remove("hidden");
+                renderAdminPanel();
+                window.location.hash = "#adminSection";
+            } else if (pwd !== null) {
+                alert("❌ Mot de passe incorrect.");
+            }
+        }
+
+        // Affichage des données dans le Panel Admin
+        function renderAdminPanel() {
+            const records = getLocalRecords();
+            const tbody = document.getElementById("adminTableBody");
+            const totalCount = document.getElementById("totalCitizens");
+            
+            totalCount.textContent = records.length;
+            tbody.innerHTML = "";
+
+            if (records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-500">Aucun citoyen enregistré pour le moment.</td></tr>`;
+                return;
+            }
+
+            records.forEach((item, index) => {
+                const tr = document.createElement("tr");
+                tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-semibold text-white">${item.prenomRP} ${item.nomRP}</td>
+                    <td class="px-6 py-4">${item.ageRP} ans</td>
+                    <td class="px-6 py-4 text-slate-400">${item.discordPseudo} <br><span class="text-xs text-blue-400">(${item.discordID})</span></td>
+                    <td class="px-6 py-4 text-slate-400">${item.date || 'N/A'}</td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="forceSync('${item.nomRP}', '${item.prenomRP}', '${item.discordID}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition" title="Renvoyer au Bot">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                        <button onclick="deleteRecord(${index})" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs rounded-lg transition" title="Supprimer">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Action de resynchronisation depuis l'admin
+        async function forceSync(nomRP, prenomRP, discordID) {
+            try {
+                const response = await fetch(BACKEND_API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nomRP, prenomRP, ageRP: 20, discordPseudo: "AdminSync", discordID })
+                });
+                if (response.ok) alert("✅ Signal de modification envoyé au bot !");
+                else alert("❌ Erreur de réponse du serveur bot.");
+            } catch (err) {
+                alert("❌ Impossible de joindre le bot.");
             }
         }
     </script>
@@ -100,7 +182,10 @@
                     <a href="#document" class="hover:text-blue-400 transition">Identité Civile</a>
                     <a href="#reglement" class="hover:text-blue-400 transition">Règlement</a>
                 </div>
-                <div>
+                <div class="flex items-center gap-3">
+                    <button id="adminLoginBtn" onclick="loginAdmin()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition border border-slate-700">
+                        <i class="fa-solid fa-lock text-violet-400 mr-1"></i> Admin
+                    </button>
                     <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
                         <i class="fa-brands fa-discord"></i> Discord
                     </a>
@@ -168,15 +253,47 @@
                     </div>
                 </div>
 
-                <div class="p-4 rounded-xl bg-blue-900/20 border border-blue-500/30 text-xs text-slate-300">
-                    <i class="fa-solid fa-robot text-blue-400 mr-1"></i>
-                    <strong>Changement automatique :</strong> En cliquant sur valider, le bot modifiera immédiatement votre pseudo Discord sur le serveur.
-                </div>
-
                 <button type="submit" id="submitBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2">
                     <span id="btnText">Valider le document & Synchroniser mon pseudo</span>
                 </button>
             </form>
+        </div>
+    </section>
+
+    <!-- PANEL ADMIN (MASQUÉ PAR DÉFAUT) -->
+    <section id="adminSection" class="py-24 bg-slate-900 border-t border-b border-violet-500/30 hidden">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-user-gear text-violet-500"></i> Panel d'Administration
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-1">Gestion du Registre Civil et des Pseudos Discord</p>
+                </div>
+                <div class="glass px-4 py-2 rounded-xl text-sm font-semibold">
+                    Citoyens enregistrés : <span id="totalCitizens" class="text-violet-400 font-bold">0</span>
+                </div>
+            </div>
+
+            <!-- Tableau des Registres -->
+            <div class="glass rounded-2xl overflow-hidden border border-slate-800">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+                            <tr>
+                                <th class="px-6 py-4">Nom RP</th>
+                                <th class="px-6 py-4">Âge</th>
+                                <th class="px-6 py-4">Discord (ID)</th>
+                                <th class="px-6 py-4">Date</th>
+                                <th class="px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <!-- Rempli en JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -195,7 +312,6 @@
                         <li>Le respect entre joueurs et envers l'équipe du staff est primordial.</li>
                         <li>Le HRP (Hors-Roleplay) en jeu vocal est strictement interdit.</li>
                         <li>L'utilisation de bugs, glitchs ou mod menu entraîne un ban définitif.</li>
-                        <li>Chaque joueur doit posséder un micro de bonne qualité.</li>
                     </ul>
                 </div>
 
@@ -204,26 +320,6 @@
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
                         <li><strong>FearRP :</strong> Vous devez valoriser votre vie face à une arme ou une menace réelle.</li>
                         <li><strong>PainRP :</strong> Simulez correctement la douleur en cas d'accident ou de blessure.</li>
-                        <li><strong>NoWinRP :</strong> Acceptez de perdre une scène RP pour maintenir un bon niveau de jeu.</li>
-                        <li>Les propos discriminatoires, racistes ou haineux sont immédiatement sanctionnés.</li>
-                    </ul>
-                </div>
-
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-red-500">
-                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-triangle-exclamation text-red-400 mr-2"></i> 3. Interdictions Strictes</h3>
-                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
-                        <li><strong>CQT / Freekill :</strong> Tuer un joueur sans motif valable ou scène construite est interdit.</li>
-                        <li><strong>VDM (Vehicle Deathmatch) :</strong> Utiliser un véhicule comme arme est proscrit.</li>
-                        <li><strong>Streamhack / Metagaming :</strong> Utiliser des infos HRP en jeu est strictement interdit.</li>
-                    </ul>
-                </div>
-
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-emerald-500">
-                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-address-card text-emerald-400 mr-2"></i> 4. Identité & Pseudo</h3>
-                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
-                        <li>Votre pseudo Discord doit correspondre exactement au format : <code>Prénom Nom</code>.</li>
-                        <li>Les noms de célébrités, insultants ou irréalistes sont strictly interdits.</li>
-                        <li>En cas de changement de nom RP, vous devez re-soumettre votre document d'identité sur le site.</li>
                     </ul>
                 </div>
             </div>
