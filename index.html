@@ -19,6 +19,71 @@
             -webkit-text-fill-color: transparent;
         }
     </style>
+    <script>
+        // CONFIGURATION DU WEBHOOK DISCORD
+        const DISCORD_WEBHOOK_URL = "TON_WEBHOOK_DISCORD_ICI";
+
+        // Fonction d'envoi de logs vers Discord
+        function sendDiscordLog(title, description, color = 3447003, fields = []) {
+            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes("TON_WEBHOOK_DISCORD_ICI")) return;
+
+            const payload = {
+                embeds: [{
+                    title: title,
+                    description: description,
+                    color: color,
+                    fields: fields,
+                    footer: { text: "Novalya RP - Système de Logs Web Site" },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            fetch(DISCORD_WEBHOOK_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).catch(err => console.error("Erreur lors de l'envoi du log:", err));
+        }
+
+        // Action : Copier IP
+        function copyServerIP() {
+            const ip = "connect.novalya-rp.fr"; // Modifier par votre IP réelle si besoin
+            navigator.clipboard.writeText(ip);
+            alert("Adresse du serveur copiée : " + ip);
+            sendDiscordLog("📋 Action Joueur : Clic Copier IP", "Un visiteur a copié l'adresse du serveur depuis le site.", 3066993);
+        }
+
+        // Action : Clic Discord
+        function logDiscordClick(source) {
+            sendDiscordLog("🎧 Action Joueur : Clic Lien Discord", `Un visiteur a cliqué sur le bouton Discord (${source}).`, 5814783);
+        }
+
+        // Action : Soumission de Candidature
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const nomRP = document.getElementById("nomRP").value;
+            const discordPseudo = document.getElementById("discordPseudo").value;
+            const age = document.getElementById("age").value;
+            const faction = document.getElementById("faction").value;
+            const message = document.getElementById("message").value;
+
+            sendDiscordLog(
+                "📥 Nouvelle Candidature / Contact",
+                "Une personne a soumis un formulaire depuis le site web.",
+                15105570,
+                [
+                    { name: "Nom RP", value: nomRP, inline: true },
+                    { name: "Pseudo Discord", value: discordPseudo, inline: true },
+                    { name: "Âge", value: age + " ans", inline: true },
+                    { name: "Faction souhaitée", value: faction, inline: true },
+                    { name: "Message / Motivation", value: message || "Aucun message" }
+                ]
+            );
+
+            document.getElementById("contactForm").reset();
+            alert("Votre demande a été transmise au staff sur Discord !");
+        }
+    </script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white">
 
@@ -35,11 +100,12 @@
                 <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
                     <a href="#accueil" class="hover:text-blue-400 transition">Accueil</a>
                     <a href="#presentation" class="hover:text-blue-400 transition">À propos</a>
-                    <a href="#factions" class="hover:text-blue-400 transition">Factions & Métiers</a>
+                    <a href="#factions" class="hover:text-blue-400 transition">Factions</a>
+                    <a href="#candidature" class="hover:text-blue-400 transition">Recrutement</a>
                     <a href="#rejoindre" class="hover:text-blue-400 transition">Nous rejoindre</a>
                 </div>
                 <div>
-                    <a href="https://discord.gg/RGBuPNVmmE" target="_blank" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+                    <a href="https://discord.gg/RGBuPNVmmE" onclick="logDiscordClick('Navbar')" target="_blank" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
                         <i class="fa-brands fa-discord"></i> Discord
                     </a>
                 </div>
@@ -47,7 +113,7 @@
         </div>
     </nav>
 
-    <!-- En-tête / Hero -->
+    <!-- Hero Section -->
     <section id="accueil" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/30 via-slate-950 to-slate-950"></div>
         <div class="relative max-w-5xl mx-auto px-4 text-center z-10 py-20">
@@ -61,50 +127,17 @@
                 Plongez au cœur de la ville d'Amboise sur Nova-Life. Incarnez un citoyen, intégrez la fonction publique ou bâtissez votre propre empire financier !
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <a href="#rejoindre" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-xl shadow-blue-500/25 transition">
-                    Rejoindre le serveur
-                </a>
-                <a href="https://discord.gg/RGBuPNVmmE" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-xl glass hover:bg-slate-800/80 text-white font-semibold text-lg transition flex items-center justify-center gap-3">
-                    <i class="fa-brands fa-discord text-blue-400"></i> Rejoindre notre Discord
+                <button onclick="copyServerIP()" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-xl shadow-blue-500/25 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Copier l'IP du serveur
+                </button>
+                <a href="https://discord.gg/RGBuPNVmmE" onclick="logDiscordClick('Hero')" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-xl glass hover:bg-slate-800/80 text-white font-semibold text-lg transition flex items-center justify-center gap-3">
+                    <i class="fa-brands fa-discord text-blue-400"></i> Rejoindre le Discord
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Présentation -->
-    <section id="presentation" class="py-24 relative bg-slate-900/50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Pourquoi choisir Novalya RP ?</h2>
-                <p class="text-slate-400 max-w-2xl mx-auto">Une expérience immersive et optimisée pour la communauté Nova-Life.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass p-8 rounded-2xl">
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl mb-6">
-                        <i class="fa-solid fa-city"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Carte Amboise</h3>
-                    <p class="text-slate-400 leading-relaxed">Profitez du cadre de la carte Amboise aménagée pour favoriser des scènes RP riches et variées.</p>
-                </div>
-                <div class="glass p-8 rounded-2xl">
-                    <div class="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-2xl mb-6">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Équipe à l'écoute</h3>
-                    <p class="text-slate-400 leading-relaxed">Un staff réactif pour encadrer les joueurs et assurer la qualité du Roleplay au quotidien.</p>
-                </div>
-                <div class="glass p-8 rounded-2xl">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl mb-6">
-                        <i class="fa-solid fa-car"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Systèmes Exclusifs</h3>
-                    <p class="text-slate-400 leading-relaxed">Des métiers, entreprises et fonctionnalités adaptés pour un gameplay fluide.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Factions & Métiers -->
+    <!-- Factions -->
     <section id="factions" class="py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
@@ -114,52 +147,70 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="glass p-6 rounded-2xl border-t-4 border-t-blue-500">
                     <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-shield-halved text-blue-400 mr-2"></i> Gendarmerie</h3>
-                    <p class="text-slate-400 text-sm">Maintenez l'ordre et veillez au respect du code de la route et des lois.</p>
+                    <p class="text-slate-400 text-sm">Maintenez l'ordre et veillez au respect des lois.</p>
                 </div>
                 <div class="glass p-6 rounded-2xl border-t-4 border-t-red-500">
                     <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-truck-medical text-red-400 mr-2"></i> Pompiers / SAMU</h3>
-                    <p class="text-slate-400 text-sm">Secourez les citoyens en détresse et intervenez sur les urgences de la ville.</p>
+                    <p class="text-slate-400 text-sm">Secourez les citoyens en détresse et intervenez sur les urgences.</p>
                 </div>
                 <div class="glass p-6 rounded-2xl border-t-4 border-t-yellow-500">
                     <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-id-card text-yellow-400 mr-2"></i> Auto-École</h3>
-                    <p class="text-slate-400 text-sm">Formez les nouveaux arrivants et faites passer le permis de conduire.</p>
+                    <p class="text-slate-400 text-sm">Formez les nouveaux arrivants et faites passer le permis.</p>
                 </div>
                 <div class="glass p-6 rounded-2xl border-t-4 border-t-purple-500">
                     <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-building text-purple-400 mr-2"></i> Entreprises</h3>
-                    <p class="text-slate-400 text-sm">Ouvrez votre propre commerce, concessionnaire, garage ou service privé.</p>
+                    <p class="text-slate-400 text-sm">Ouvrez votre propre commerce, concessionnaire ou garage.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Rejoindre -->
-    <section id="rejoindre" class="py-24 bg-slate-900/50">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-6">Comment nous rejoindre ?</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 text-left">
-                <div class="glass p-6 rounded-xl">
-                    <span class="text-blue-400 font-bold text-xl block mb-2">01.</span>
-                    <h4 class="font-bold text-white mb-2">Rejoindre le Discord</h4>
-                    <p class="text-sm text-slate-400">Accédez à notre Discord pour lire le règlement et prendre connaissance des annonces.</p>
-                </div>
-                <div class="glass p-6 rounded-xl">
-                    <span class="text-violet-400 font-bold text-xl block mb-2">02.</span>
-                    <h4 class="font-bold text-white mb-2">Lancer Nova-Life</h4>
-                    <p class="text-sm text-slate-400">Lancez votre jeu Nova-Life et rendez-vous dans la recherche de serveurs.</p>
-                </div>
-                <div class="glass p-6 rounded-xl">
-                    <span class="text-emerald-400 font-bold text-xl block mb-2">03.</span>
-                    <h4 class="font-bold text-white mb-2">Se connecter</h4>
-                    <p class="text-sm text-slate-400">Recherchez "Novalya RP" et rejoignez-nous en jeu !</p>
-                </div>
+    <!-- Candidature / Contact -->
+    <section id="candidature" class="py-24 bg-slate-900/50">
+        <div class="max-w-3xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Postuler / Contacter le Staff</h2>
+                <p class="text-slate-400">Remplissez ce formulaire pour envoyer directement votre candidature au staff sur Discord.</p>
             </div>
-            <a href="https://discord.gg/RGBuPNVmmE" target="_blank" class="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition">
-                <i class="fa-brands fa-discord"></i> Rejoindre notre serveur Discord
-            </a>
+            <form id="contactForm" onsubmit="handleFormSubmit(event)" class="glass p-8 rounded-2xl space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Nom & Prénom RP</label>
+                        <input type="text" id="nomRP" required class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Pseudo Discord</label>
+                        <input type="text" id="discordPseudo" required placeholder="ex: pseudo#0000" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Âge (HRP)</label>
+                        <input type="number" id="age" required min="10" max="99" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Faction souhaitée</label>
+                        <select id="faction" required class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                            <option value="Citoyen">Citoyen</option>
+                            <option value="Gendarmerie">Gendarmerie</option>
+                            <option value="Sapeurs-Pompiers">Sapeurs-Pompiers / SAMU</option>
+                            <option value="Auto-École">Auto-École</option>
+                            <option value="Entreprise Privée">Entreprise Privée</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Message / Motivation</label>
+                    <textarea id="message" rows="4" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500"></textarea>
+                </div>
+                <button type="submit" class="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition">
+                    Envoyer la demande
+                </button>
+            </form>
         </div>
     </section>
 
-    <!-- Pied de page -->
+    <!-- Footer -->
     <footer class="py-8 border-t border-slate-800 text-center text-slate-500 text-sm">
         <p>&copy; 2026 Novalya RP - Serveur Nova-Life Amboise. Tous droits réservés.</p>
     </footer>
