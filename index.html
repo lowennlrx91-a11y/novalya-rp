@@ -1,314 +1,752 @@
+
 <!DOCTYPE html>
 <html lang="fr" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novalya RP - Dashboard & Panel Administration</title>
+    <meta name="theme-color" content="#080d1b">
+    <meta name="description" content="Bienvenue sur Novalya RP, votre communauté Nova-Life Amboise. Rejoignez-nous pour vivre une expérience roleplay immersive et construire votre propre histoire.">
+    <title>Novalya RP — Bienvenue dans votre nouvelle vie</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        .glass {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        :root {
+            --blue: #3b82f6;
+            --violet: #8b5cf6;
+            --background: #080d1b;
         }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--background);
+            color: #f8fafc;
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, .78);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, .09);
+        }
+
         .text-gradient {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            background: linear-gradient(120deg, #60a5fa, #a78bfa, #818cf8);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-background {
+            background:
+                radial-gradient(ellipse at 15% 20%, rgba(37, 99, 235, .22), transparent 40%),
+                radial-gradient(ellipse at 85% 40%, rgba(139, 92, 246, .20), transparent 40%),
+                linear-gradient(180deg, #080d1b, #0b1120 65%, #080d1b);
+        }
+
+        .grid-background {
+            background-image:
+                linear-gradient(rgba(148, 163, 184, .045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, .045) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: linear-gradient(to bottom, black, transparent 85%);
+        }
+
+        .card {
+            background: linear-gradient(
+                145deg,
+                rgba(30, 41, 59, .72),
+                rgba(15, 23, 42, .78)
+            );
+            border: 1px solid rgba(148, 163, 184, .13);
+            transition: transform .25s ease, border-color .25s ease,
+                        box-shadow .25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(96, 165, 250, .45);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, .20);
+        }
+
+        .icon-box {
+            display: flex;
+            width: 48px;
+            height: 48px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(59, 130, 246, .13);
+            border: 1px solid rgba(96, 165, 250, .20);
+            color: #93c5fd;
+            font-size: 19px;
+            flex-shrink: 0;
+        }
+
+        .primary-button {
+            background: linear-gradient(110deg, #2563eb, #7c3aed);
+            box-shadow: 0 10px 30px rgba(79, 70, 229, .22);
+            transition: transform .2s ease, filter .2s ease;
+        }
+
+        .primary-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.13);
+        }
+
+        .secondary-button {
+            background: rgba(255, 255, 255, .045);
+            border: 1px solid rgba(255, 255, 255, .13);
+            transition: background .2s ease, border-color .2s ease;
+        }
+
+        .secondary-button:hover {
+            background: rgba(255, 255, 255, .09);
+            border-color: rgba(255, 255, 255, .25);
+        }
+
+        .rule-number {
+            display: inline-flex;
+            width: 35px;
+            height: 35px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, .15);
+            color: #93c5fd;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .section-label {
+            color: #93c5fd;
+            text-transform: uppercase;
+            letter-spacing: .17em;
+            font-size: .72rem;
+            font-weight: 800;
+        }
+
+        .fade-in {
+            animation: fadeIn .8s ease both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
-    <script>
-        const BACKEND_API_URL = "http://155.117.100.51:25578/api/register-identity";
-        const ADMIN_PASSWORD = "Novalya2026!"; // Mot de passe affiché sur le site
-
-        function getLocalRecords() {
-            return JSON.parse(localStorage.getItem('novalya_citizens') || '[]');
-        }
-
-        function saveLocalRecord(record) {
-            const records = getLocalRecords();
-            records.unshift(record);
-            localStorage.setItem('novalya_citizens', JSON.stringify(records));
-        }
-
-        function deleteRecord(index) {
-            if (confirm("Voulez-vous vraiment supprimer ce citoyen du registre local ?")) {
-                const records = getLocalRecords();
-                records.splice(index, 1);
-                localStorage.setItem('novalya_citizens', JSON.stringify(records));
-                renderAdminPanel();
-            }
-        }
-
-        // Connexion au Panel Admin
-        function loginAdmin(autoInput = false) {
-            let pwd = autoInput ? ADMIN_PASSWORD : prompt("Entrez le mot de passe administrateur :", ADMIN_PASSWORD);
-            if (pwd === ADMIN_PASSWORD) {
-                document.getElementById("loginCard").classList.add("hidden");
-                document.getElementById("adminSection").classList.remove("hidden");
-                renderAdminPanel();
-            } else if (pwd !== null) {
-                alert("❌ Mot de passe incorrect.");
-            }
-        }
-
-        // Ajout manuel d'un citoyen depuis le Panel Admin
-        async function addCitizenAdmin(e) {
-            e.preventDefault();
-            const nomRP = document.getElementById("adminNomRP").value.trim();
-            const prenomRP = document.getElementById("adminPrenomRP").value.trim();
-            const ageRP = parseInt(document.getElementById("adminAgeRP").value, 10);
-            const discordPseudo = document.getElementById("adminDiscordPseudo").value.trim();
-            const discordID = document.getElementById("adminDiscordID").value.trim();
-
-            if (!/^\d{17,19}$/.test(discordID)) {
-                alert("❌ ID Discord invalide (doit comporter entre 17 et 19 chiffres).");
-                return;
-            }
-
-            const payload = { nomRP, prenomRP, ageRP, discordPseudo, discordID, date: new Date().toLocaleDateString('fr-FR') };
-            saveLocalRecord(payload);
-
-            try {
-                await fetch(BACKEND_API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                alert("✅ Citoyen ajouté et requête envoyée au bot !");
-            } catch (err) {
-                alert("⚠️ Citoyen enregistré localement (Bot hors-ligne).");
-            }
-
-            document.getElementById("addCitizenForm").reset();
-            renderAdminPanel();
-        }
-
-        // Action de resynchronisation du pseudo via le bot
-        async function forceSync(nomRP, prenomRP, discordID) {
-            try {
-                const response = await fetch(BACKEND_API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nomRP, prenomRP, ageRP: 20, discordPseudo: "AdminSync", discordID })
-                });
-                if (response.ok) alert("✅ Signal de modification envoyé au bot !");
-                else alert("❌ Erreur de réponse du serveur bot.");
-            } catch (err) {
-                alert("❌ Impossible de joindre le bot.");
-            }
-        }
-
-        // Affichage des données et statistiques
-        function renderAdminPanel() {
-            const records = getLocalRecords();
-            const tbody = document.getElementById("adminTableBody");
-            const totalCount = document.getElementById("totalCitizens");
-            const avgAge = document.getElementById("avgAge");
-
-            totalCount.textContent = records.length;
-            
-            if (records.length > 0) {
-                const totalAge = records.reduce((acc, curr) => acc + (curr.ageRP || 0), 0);
-                avgAge.textContent = Math.round(totalAge / records.length) + " ans";
-            } else {
-                avgAge.textContent = "N/A";
-            }
-
-            tbody.innerHTML = "";
-
-            if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-500">Aucun citoyen dans le registre. Utilisez le formulaire ci-dessous pour en ajouter un.</td></tr>`;
-                return;
-            }
-
-            records.forEach((item, index) => {
-                const tr = document.createElement("tr");
-                tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition";
-                tr.innerHTML = `
-                    <td class="px-6 py-4 font-semibold text-white">${item.prenomRP} ${item.nomRP}</td>
-                    <td class="px-6 py-4">${item.ageRP} ans</td>
-                    <td class="px-6 py-4 text-slate-400">${item.discordPseudo} <br><span class="text-xs text-blue-400">(${item.discordID})</span></td>
-                    <td class="px-6 py-4 text-slate-400">${item.date || 'N/A'}</td>
-                    <td class="px-6 py-4 flex gap-2">
-                        <button onclick="forceSync('${item.nomRP}', '${item.prenomRP}', '${item.discordID}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition flex items-center gap-1" title="Renommer via Bot">
-                            <i class="fa-solid fa-rotate"></i> Sync
-                        </button>
-                        <button onclick="deleteRecord(${index})" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs rounded-lg transition" title="Supprimer">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-    </script>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 glass">
+<body class="antialiased">
+
+    <!-- NAVIGATION -->
+    <nav class="fixed top-0 inset-x-0 z-50 glass">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-violet-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/30">
+            <div class="flex items-center justify-between h-[76px]">
+
+                <a href="#accueil" class="flex items-center gap-3"
+                   aria-label="Novalya RP - Accueil">
+                    <div class="w-11 h-11 rounded-xl primary-button flex items-center justify-center font-black text-2xl">
                         N
                     </div>
-                    <span class="font-extrabold text-2xl tracking-wider text-gradient">NOVALYA RP</span>
-                </div>
-                <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
+
+                    <div>
+                        <div class="font-black text-xl tracking-wider text-gradient">
+                            NOVALYA RP
+                        </div>
+                        <div class="text-[10px] text-slate-500 tracking-[.22em] uppercase">
+                            Une nouvelle histoire
+                        </div>
+                    </div>
+                </a>
+
+                <div class="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-300">
                     <a href="#accueil" class="hover:text-blue-400 transition">Accueil</a>
-                    <a href="#adminSection" class="hover:text-blue-400 transition">Panel Admin</a>
+                    <a href="#presentation" class="hover:text-blue-400 transition">Présentation</a>
+                    <a href="#experience" class="hover:text-blue-400 transition">Notre univers</a>
                     <a href="#reglement" class="hover:text-blue-400 transition">Règlement</a>
                 </div>
-                <div>
-                    <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
-                        <i class="fa-brands fa-discord"></i> Discord
-                    </a>
-                </div>
+
+                <a href="https://discord.gg/RGBuPNVmmE"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="primary-button rounded-xl px-4 sm:px-5 py-3 font-bold text-sm flex items-center gap-2">
+                    <i class="fa-brands fa-discord"></i>
+                    <span class="hidden sm:inline">Nous rejoindre</span>
+                    <span class="sm:hidden">Discord</span>
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Bienvenue / Banner -->
-    <section id="accueil" class="relative pt-32 pb-16 overflow-hidden">
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/30 via-slate-950 to-slate-950"></div>
-        <div class="relative max-w-6xl mx-auto px-4 text-center z-10">
-            <span class="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest inline-block mb-4">
-                Serveur Nova-Life • Carte Amboise
-            </span>
-            <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white mb-4">
-                Bienvenue sur le Portail <span class="text-gradient">Novalya RP</span>
+    <!-- ACCUEIL -->
+    <header id="accueil"
+            class="relative min-h-screen flex items-center justify-center pt-24 pb-16 hero-background overflow-hidden">
+
+        <div class="absolute inset-0 grid-background pointer-events-none"></div>
+
+        <div class="absolute w-72 h-72 bg-blue-600/10 rounded-full blur-3xl -top-20 -left-20"></div>
+        <div class="absolute w-96 h-96 bg-violet-600/10 rounded-full blur-3xl bottom-0 -right-20"></div>
+
+        <div class="relative z-10 max-w-6xl mx-auto px-5 text-center fade-in">
+
+            <div class="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 mb-8">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span class="text-xs sm:text-sm text-blue-200 font-semibold">
+                    Serveur Nova-Life · Carte Amboise
+                </span>
+            </div>
+
+            <p class="section-label mb-5">Votre prochaine aventure commence ici</p>
+
+            <h1 class="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tight leading-[1.08] mb-7">
+                Bienvenue sur<br>
+                <span class="text-gradient">Novalya RP</span>
             </h1>
-            <p class="text-slate-400 max-w-2xl mx-auto mb-8">
-                Espace officiel de gestion du serveur RP, du registre civil des citoyens et du règlement officiel.
+
+            <p class="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-6">
+                Entrez dans un univers où chaque rencontre peut changer votre destin,
+                où chaque décision a ses conséquences et où votre histoire ne
+                ressemble à aucune autre.
+            </p>
+
+            <p class="text-base text-slate-400 max-w-2xl mx-auto leading-8 mb-10">
+                Que vous souhaitiez construire votre carrière, créer votre entreprise,
+                servir la population, rejoindre les forces de l'ordre ou simplement
+                faire votre place dans la ville, Novalya RP vous invite à écrire
+                votre propre chapitre au sein d'une communauté de passionnés.
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-xl mx-auto">
+                <a href="https://discord.gg/RGBuPNVmmE"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="primary-button rounded-xl px-8 py-4 font-extrabold text-base flex items-center justify-center gap-3">
+                    <i class="fa-brands fa-discord text-xl"></i>
+                    Rejoindre la communauté
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                </a>
+
+                <a href="#presentation"
+                   class="secondary-button rounded-xl px-8 py-4 font-bold flex items-center justify-center gap-3">
+                    Découvrir Novalya
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            </div>
+
+            <div class="mt-16 flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm text-slate-400">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-city text-blue-400"></i>
+                    Univers urbain
+                </span>
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-people-group text-violet-400"></i>
+                    Communauté RP
+                </span>
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-emerald-400"></i>
+                    Règles communes
+                </span>
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-amber-400"></i>
+                    Histoires partagées
+                </span>
+            </div>
+        </div>
+
+        <a href="#presentation"
+           aria-label="Découvrir la présentation"
+           class="absolute bottom-5 left-1/2 -translate-x-1/2 text-slate-500 hover:text-white transition">
+            <i class="fa-solid fa-angles-down text-xl"></i>
+        </a>
+    </header>
+
+    <!-- PRESENTATION -->
+    <section id="presentation" class="py-24 sm:py-28 relative">
+        <div class="max-w-6xl mx-auto px-5">
+
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <p class="section-label mb-4">Fais connaissance avec nous</p>
+
+                <h2 class="text-3xl sm:text-5xl font-black mb-6">
+                    Plus qu'un serveur,<br>
+                    <span class="text-gradient">une véritable aventure.</span>
+                </h2>
+
+                <p class="text-slate-400 text-base sm:text-lg leading-8">
+                    Novalya RP est un projet communautaire autour de Nova-Life
+                    et de la carte Amboise. Notre ambition est de proposer un
+                    environnement dans lequel chacun peut développer son personnage,
+                    participer à la vie de la ville et partager des scènes RP
+                    intéressantes avec les autres joueurs.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+
+                <article class="card rounded-2xl p-7">
+                    <div class="icon-box mb-6">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Écrivez votre histoire</h3>
+                    <p class="text-slate-400 leading-7 text-sm">
+                        Imaginez votre personnage, son passé, ses ambitions et
+                        ses relations. Chaque interaction est l'occasion de faire
+                        évoluer votre histoire et de créer des souvenirs avec
+                        les autres habitants.
+                    </p>
+                </article>
+
+                <article class="card rounded-2xl p-7">
+                    <div class="icon-box mb-6"
+                         style="background:rgba(139,92,246,.13);color:#c4b5fd">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Construisez votre avenir</h3>
+                    <p class="text-slate-400 leading-7 text-sm">
+                        Trouvez votre place dans la ville, développez votre
+                        activité, participez à la vie économique et faites
+                        évoluer votre personnage grâce aux rencontres et
+                        aux opportunités du quotidien.
+                    </p>
+                </article>
+
+                <article class="card rounded-2xl p-7">
+                    <div class="icon-box mb-6"
+                         style="background:rgba(16,185,129,.12);color:#6ee7b7">
+                        <i class="fa-solid fa-people-group"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Faites partie de la communauté</h3>
+                    <p class="text-slate-400 leading-7 text-sm">
+                        Échangez avec les joueurs, découvrez de nouveaux
+                        personnages et participez aux scènes collectives.
+                        Le respect, la communication et l'entraide sont
+                        essentiels pour faire vivre notre communauté.
+                    </p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section id="experience" class="py-24 bg-slate-900/40 border-y border-white/5">
+        <div class="max-w-6xl mx-auto px-5">
+
+            <div class="grid lg:grid-cols-2 gap-14 items-center">
+
+                <div>
+                    <p class="section-label mb-4">Votre place dans la ville</p>
+
+                    <h2 class="text-3xl sm:text-5xl font-black leading-tight mb-6">
+                        Un monde de possibilités.<br>
+                        <span class="text-gradient">Une histoire à construire.</span>
+                    </h2>
+
+                    <p class="text-slate-400 leading-8 mb-5">
+                        Dans Novalya RP, votre personnage peut emprunter des chemins
+                        très différents. Faites des rencontres, prenez des décisions,
+                        développez vos projets et découvrez les conséquences de
+                        vos choix au fil de vos aventures.
+                    </p>
+
+                    <p class="text-slate-400 leading-8 mb-8">
+                        L'objectif est de favoriser un roleplay cohérent, vivant
+                        et agréable pour tous. Les meilleures scènes ne sont pas
+                        nécessairement celles où l'on gagne, mais celles où chaque
+                        joueur peut contribuer à une histoire intéressante.
+                    </p>
+
+                    <a href="https://discord.gg/RGBuPNVmmE"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center gap-3 primary-button rounded-xl px-6 py-4 font-bold">
+                        <i class="fa-brands fa-discord text-xl"></i>
+                        Rejoindre notre Discord
+                    </a>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+
+                    <div class="card rounded-2xl p-6">
+                        <div class="text-3xl text-blue-400 mb-5">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Vie professionnelle</h3>
+                        <p class="text-sm text-slate-400 leading-6">
+                            Développez votre carrière et prenez part à
+                            l'activité de la ville.
+                        </p>
+                    </div>
+
+                    <div class="card rounded-2xl p-6 sm:mt-8">
+                        <div class="text-3xl text-violet-400 mb-5">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Vie citoyenne</h3>
+                        <p class="text-sm text-slate-400 leading-6">
+                            Participez à la vie collective et interagissez
+                            avec les autres habitants.
+                        </p>
+                    </div>
+
+                    <div class="card rounded-2xl p-6">
+                        <div class="text-3xl text-emerald-400 mb-5">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Rencontres & alliances</h3>
+                        <p class="text-sm text-slate-400 leading-6">
+                            Créez des liens, développez des projets
+                            et construisez des relations durables.
+                        </p>
+                    </div>
+
+                    <div class="card rounded-2xl p-6 sm:mt-8">
+                        <div class="text-3xl text-amber-400 mb-5">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Vos propres ambitions</h3>
+                        <p class="text-sm text-slate-400 leading-6">
+                            Fixez-vous des objectifs et faites évoluer
+                            votre personnage à votre rythme.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-500 text-center mt-10">
+                Les activités et métiers disponibles dépendent de l'organisation
+                effective du serveur en jeu.
             </p>
         </div>
     </section>
 
-    <!-- Zone de Connexion / Accès Direct -->
-    <section class="max-w-4xl mx-auto px-4 mb-16">
-        <div id="loginCard" class="glass p-8 rounded-2xl border border-violet-500/30 text-center space-y-6">
-            <div class="w-16 h-16 rounded-2xl bg-violet-600/20 text-violet-400 flex items-center justify-center text-3xl mx-auto">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <div>
-                <h2 class="text-2xl font-bold text-white mb-2">Accès au Panel Administration</h2>
-                <p class="text-slate-400 text-sm">Mot de passe par défaut configuré : <code class="bg-slate-800 text-violet-400 px-3 py-1 rounded-lg border border-slate-700 font-mono text-base">Novalya2026!</code></p>
-            </div>
-            <button onclick="loginAdmin(true)" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 transition">
-                <i class="fa-solid fa-key mr-2"></i> Déverrouiller le Panel Admin
-            </button>
-        </div>
-    </section>
+    <!-- VALEURS -->
+    <section class="py-24">
+        <div class="max-w-6xl mx-auto px-5">
 
-    <!-- PANEL ADMIN PRINCIPAL -->
-    <section id="adminSection" class="py-12 bg-slate-900/60 border-t border-b border-violet-500/20 hidden">
-        <div class="max-w-6xl mx-auto px-4 space-y-8">
-            
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h2 class="text-3xl font-extrabold text-white flex items-center gap-3">
-                        <i class="fa-solid fa-user-gear text-violet-500"></i> Panel de Gestion Admin
-                    </h2>
-                    <p class="text-slate-400 text-sm mt-1">Gérez le registre des citoyens et la synchronisation des pseudos Discord.</p>
-                </div>
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <p class="section-label mb-4">Notre état d'esprit</p>
+                <h2 class="text-3xl sm:text-4xl font-black mb-5">
+                    Une communauté qui avance ensemble
+                </h2>
+                <p class="text-slate-400 leading-7">
+                    Pour que chacun puisse profiter de son aventure, nous accordons
+                    une importance particulière au comportement des joueurs et à
+                    la qualité des interactions.
+                </p>
             </div>
 
-            <!-- Statistiques du serveur -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
-                    <p class="text-slate-400 text-sm mb-1">Total Citoyens</p>
-                    <p id="totalCitizens" class="text-3xl font-extrabold text-white">0</p>
-                </div>
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
-                    <p class="text-slate-400 text-sm mb-1">Moyenne d'Âge RP</p>
-                    <p id="avgAge" class="text-3xl font-extrabold text-white">N/A</p>
-                </div>
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-emerald-500">
-                    <p class="text-slate-400 text-sm mb-1">Statut API Bot</p>
-                    <p class="text-lg font-bold text-emerald-400 flex items-center gap-2 mt-1">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        Connecté (155.117.100.51)
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+                <div class="text-center p-6 rounded-2xl border border-white/5 bg-white/[.02]">
+                    <i class="fa-solid fa-heart text-3xl text-rose-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Respect</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Respecter chaque joueur, même en cas de désaccord.
                     </p>
                 </div>
-            </div>
 
-            <!-- Formulaire d'ajout rapide de citoyen -->
-            <div class="glass p-6 rounded-2xl border border-blue-500/20">
-                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-user-plus text-blue-400"></i> Ajouter / Renommer un Citoyen Manuellement
-                </h3>
-                <form id="addCitizenForm" onsubmit="addCitizenAdmin(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <input type="text" id="adminNomRP" placeholder="Nom RP" required class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                    <input type="text" id="adminPrenomRP" placeholder="Prénom RP" required class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                    <input type="number" id="adminAgeRP" placeholder="Âge RP" required min="18" max="99" class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                    <input type="text" id="adminDiscordPseudo" placeholder="Pseudo Discord" required class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                    <input type="text" id="adminDiscordID" placeholder="ID Discord (ex: 123456789...)" required pattern="\d{17,19}" class="px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-check"></i> Enregistrer & Synchroniser
-                    </button>
-                </form>
-            </div>
+                <div class="text-center p-6 rounded-2xl border border-white/5 bg-white/[.02]">
+                    <i class="fa-solid fa-masks-theater text-3xl text-violet-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Immersion</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Privilégier des scènes cohérentes et crédibles.
+                    </p>
+                </div>
 
-            <!-- Tableau des Registres -->
-            <div class="glass rounded-2xl overflow-hidden border border-slate-800">
-                <div class="p-4 bg-slate-800/50 border-b border-slate-800">
-                    <h3 class="font-bold text-white">Registre Civil des Citoyens</h3>
+                <div class="text-center p-6 rounded-2xl border border-white/5 bg-white/[.02]">
+                    <i class="fa-solid fa-comments text-3xl text-blue-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Communication</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Dialoguer calmement et résoudre les problèmes ensemble.
+                    </p>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700">
-                            <tr>
-                                <th class="px-6 py-4">Nom RP</th>
-                                <th class="px-6 py-4">Âge</th>
-                                <th class="px-6 py-4">Discord (ID)</th>
-                                <th class="px-6 py-4">Date Enregistrement</th>
-                                <th class="px-6 py-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminTableBody">
-                            <!-- Rempli dynamiquement en JS -->
-                        </tbody>
-                    </table>
+
+                <div class="text-center p-6 rounded-2xl border border-white/5 bg-white/[.02]">
+                    <i class="fa-solid fa-scale-balanced text-3xl text-emerald-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Fair-play</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Accepter les conséquences de ses choix en RP.
+                    </p>
                 </div>
+
             </div>
         </div>
     </section>
 
-    <!-- Section Règlement -->
-    <section id="reglement" class="py-20">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-extrabold text-white mb-2">📜 Règlement Officiel du Serveur</h2>
-                <p class="text-slate-400 text-sm">Le respect de ces règles est obligatoire sous peine de sanction administrative.</p>
+    <!-- REGLEMENT -->
+    <section id="reglement" class="py-24 bg-slate-900/40 border-y border-white/5">
+        <div class="max-w-6xl mx-auto px-5">
+
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <p class="section-label mb-4">À lire avant de jouer</p>
+                <h2 class="text-3xl sm:text-5xl font-black mb-5">
+                    Le règlement <span class="text-gradient">Novalya RP</span>
+                </h2>
+                <p class="text-slate-400 leading-7">
+                    Le règlement permet de garantir un environnement agréable,
+                    équilibré et respectueux. En rejoignant le serveur, chaque
+                    joueur est tenu de connaître et de respecter les règles
+                    applicables en jeu et sur Discord.
+                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
-                    <h3 class="text-lg font-bold text-white mb-3"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> 1. Règles Générales</h3>
-                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
-                        <li>Le HRP (Hors-Roleplay) vocal en jeu est interdit.</li>
-                        <li>Utilisation de mods/glitchs = bannissement définitif.</li>
-                    </ul>
-                </div>
+            <div class="grid md:grid-cols-2 gap-6">
 
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
-                    <h3 class="text-lg font-bold text-white mb-3"><i class="fa-solid fa-user-shield text-violet-400 mr-2"></i> 2. Immersion & Fairplay</h3>
-                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
-                        <li><strong>FearRP :</strong> Respectez la valeur de votre vie en scène.</li>
-                        <li><strong>PainRP :</strong> Simulez les blessures et accidents.</li>
+                <!-- REGLE 1 -->
+                <article class="card rounded-2xl p-7">
+                    <div class="flex items-center gap-3 mb-5">
+                        <span class="rule-number">01</span>
+                        <h3 class="text-lg sm:text-xl font-bold">Respect & comportement</h3>
+                    </div>
+
+                    <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Le respect entre les joueurs et envers le staff est obligatoire.</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Les insultes ciblées, le harcèlement et les menaces sont interdits.</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Les propos racistes, discriminatoires ou haineux sont interdits.</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Les désaccords doivent être réglés calmement, sans perturber les scènes.</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Les consignes légitimes du staff doivent être respectées.</li>
                     </ul>
+                </article>
+
+                <!-- REGLE 2 -->
+                <article class="card rounded-2xl p-7">
+                    <div class="flex items-center gap-3 mb-5">
+                        <span class="rule-number">02</span>
+                        <h3 class="text-lg sm:text-xl font-bold">Immersion & roleplay</h3>
+                    </div>
+
+                    <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                        <li><i class="fa-solid fa-check text-violet-400 mr-2"></i>
+                            Votre personnage doit agir de façon cohérente avec la situation.</li>
+                        <li><i class="fa-solid fa-check text-violet-400 mr-2"></i>
+                            Le FearRP consiste à prendre en compte les menaces crédibles
+                            pour la vie de votre personnage.</li>
+                        <li><i class="fa-solid fa-check text-violet-400 mr-2"></i>
+                            Le PainRP consiste à jouer les conséquences physiques
+                            d'une blessure ou d'un accident.</li>
+                        <li><i class="fa-solid fa-check text-violet-400 mr-2"></i>
+                            Le NoWinRP est à éviter : une scène n'a pas besoin de se
+                            terminer par votre victoire.</li>
+                        <li><i class="fa-solid fa-check text-violet-400 mr-2"></i>
+                            Le HRP ne doit pas perturber les scènes en cours.</li>
+                    </ul>
+                </article>
+
+                <!-- REGLE 3 -->
+                <article class="card rounded-2xl p-7">
+                    <div class="flex items-center gap-3 mb-5">
+                        <span class="rule-number">03</span>
+                        <h3 class="text-lg sm:text-xl font-bold">Actions interdites</h3>
+                    </div>
+
+                    <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                        <li><i class="fa-solid fa-ban text-rose-400 mr-2"></i>
+                            Le Freekill : tuer un joueur sans motif RP valable.</li>
+                        <li><i class="fa-solid fa-ban text-rose-400 mr-2"></i>
+                            Le VDM : utiliser un véhicule pour tuer ou blesser
+                            volontairement sans justification RP valable.</li>
+                        <li><i class="fa-solid fa-ban text-rose-400 mr-2"></i>
+                            Le Metagaming : utiliser des informations obtenues hors RP
+                            pour avantager son personnage.</li>
+                        <li><i class="fa-solid fa-ban text-rose-400 mr-2"></i>
+                            Le Streamhack : exploiter un stream ou des informations
+                            externes pour influencer une scène.</li>
+                        <li><i class="fa-solid fa-ban text-rose-400 mr-2"></i>
+                            Les cheats, exploits, glitchs abusifs et outils de triche
+                            sont interdits.</li>
+                    </ul>
+                </article>
+
+                <!-- REGLE 4 -->
+                <article class="card rounded-2xl p-7">
+                    <div class="flex items-center gap-3 mb-5">
+                        <span class="rule-number">04</span>
+                        <h3 class="text-lg sm:text-xl font-bold">Discord & communauté</h3>
+                    </div>
+
+                    <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>
+                            Utilisez les salons Discord conformément à leur fonction.</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>
+                            Évitez le spam, les mentions abusives et les publicités
+                            non autorisées.</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>
+                            Ne publiez pas les informations personnelles d'un autre joueur.</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>
+                            Les conflits doivent être signalés au staff avec des
+                            explications claires et, si possible, des preuves.</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>
+                            Les décisions de modération peuvent être discutées
+                            respectueusement auprès de l'équipe concernée.</li>
+                    </ul>
+                </article>
+
+                <!-- REGLE 5 -->
+                <article class="card rounded-2xl p-7">
+                    <div class="flex items-center gap-3 mb-5">
+                        <span class="rule-number">05</span>
+                        <h3 class="text-lg sm:text-xl font-bold">Personnage & identité RP</h3>
+                    </div>
+
+                    <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Choisissez un nom et un prénom adaptés à l'univers RP.</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Les noms provocateurs, insultants ou destinés à contourner
+                            les règles peuvent être refusés.</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Respectez la cohérence de votre personnage et de son histoire.</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i>
+                            Ne changez pas arbitrairement d'identité pour échapper
+                            aux conséquences d'une scène.</li>
+                    </ul>
+                </article>
+
+                <!-- REGLE 6 -->
+                <article class="card rounded-2xl p-7">
+                    <div class="flex items-center gap-3 mb-5">
+                        <span class="rule-number">06</span>
+                        <h3 class="text-lg sm:text-xl font-bold">Sanctions & modération</h3>
+                    </div>
+
+                    <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                        <li><i class="fa-solid fa-gavel text-amber-400 mr-2"></i>
+                            Les infractions peuvent entraîner un avertissement,
+                            une exclusion temporaire ou un bannissement.</li>
+                        <li><i class="fa-solid fa-gavel text-amber-400 mr-2"></i>
+                            La sanction dépend de la gravité des faits et de leur répétition.</li>
+                        <li><i class="fa-solid fa-gavel text-amber-400 mr-2"></i>
+                            Toute tentative de contourner une sanction peut entraîner
+                            des mesures supplémentaires.</li>
+                        <li><i class="fa-solid fa-gavel text-amber-400 mr-2"></i>
+                            Le staff peut demander des explications et des éléments
+                            permettant de comprendre un incident.</li>
+                    </ul>
+                </article>
+
+            </div>
+
+            <div class="mt-8 rounded-2xl border border-blue-400/20 bg-blue-500/[.06] p-6 sm:p-8">
+                <div class="flex items-start gap-4">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-2">Un doute sur une règle ?</h3>
+                        <p class="text-sm text-slate-400 leading-7">
+                            Si une situation est ambiguë, demandez conseil au staff
+                            plutôt que de prendre une décision susceptible de gâcher
+                            la scène des autres joueurs. Les règles peuvent être
+                            précisées par l'équipe selon les besoins du serveur.
+                            Consultez également le règlement officiel disponible
+                            sur notre Discord.
+                        </p>
+                    </div>
                 </div>
             </div>
+
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="py-8 border-t border-slate-800 text-center text-slate-500 text-sm">
-        <p>&copy; 2026 Novalya RP - Serveur Nova-Life Amboise. Tous droits réservés.</p>
+    <!-- APPEL A L'ACTION -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none"
+             style="background:radial-gradient(ellipse at center,rgba(79,70,229,.16),transparent 65%)">
+        </div>
+
+        <div class="relative max-w-4xl mx-auto px-5 text-center">
+            <div class="w-16 h-16 mx-auto rounded-2xl primary-button flex items-center justify-center text-3xl mb-7">
+                <i class="fa-brands fa-discord"></i>
+            </div>
+
+            <p class="section-label mb-4">La ville vous attend</p>
+
+            <h2 class="text-3xl sm:text-5xl font-black mb-6">
+                Votre histoire commence <span class="text-gradient">maintenant.</span>
+            </h2>
+
+            <p class="text-slate-400 text-base sm:text-lg leading-8 max-w-2xl mx-auto mb-9">
+                Vous souhaitez découvrir Novalya RP, rencontrer la communauté
+                et préparer votre arrivée sur Nova-Life Amboise ?
+                Rejoignez notre Discord pour retrouver les informations du serveur,
+                échanger avec les autres membres et vous tenir au courant du projet.
+            </p>
+
+            <a href="https://discord.gg/RGBuPNVmmE"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="inline-flex items-center justify-center gap-3 primary-button rounded-xl px-8 py-4 font-extrabold text-lg">
+                <i class="fa-brands fa-discord text-2xl"></i>
+                Rejoindre le Discord officiel
+                <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+            </a>
+
+            <p class="text-xs text-slate-500 mt-5">
+                Novalya RP · Nova-Life · Carte Amboise
+            </p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/5 bg-slate-950/70">
+        <div class="max-w-7xl mx-auto px-5 py-9">
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+
+                <a href="#accueil" class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl primary-button flex items-center justify-center font-black text-xl">
+                        N
+                    </div>
+                    <div>
+                        <div class="font-black tracking-wider text-gradient">NOVALYA RP</div>
+                        <div class="text-xs text-slate-500">Une nouvelle histoire</div>
+                    </div>
+                </a>
+
+                <div class="flex flex-wrap justify-center gap-6 text-sm text-slate-400">
+                    <a href="#accueil" class="hover:text-white transition">Accueil</a>
+                    <a href="#presentation" class="hover:text-white transition">Présentation</a>
+                    <a href="#reglement" class="hover:text-white transition">Règlement</a>
+                    <a href="https://discord.gg/RGBuPNVmmE"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="hover:text-blue-400 transition">Discord</a>
+                </div>
+            </div>
+
+            <div class="border-t border-white/5 mt-7 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-600">
+                <p>© 2026 Novalya RP. Tous droits réservés.</p>
+                <p>Communauté autour de Nova-Life · Amboise</p>
+            </div>
+        </div>
     </footer>
 
 </body>
