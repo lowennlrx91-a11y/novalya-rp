@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novalya RP - Panel Administration Officiel</title>
+    <title>Novalya RP - Panel Administration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -20,166 +20,161 @@
         }
     </style>
     <script>
-        const BACKEND_API_URL = "http://155.117.100.51:25578/api/admin";
-        const ADMIN_PASSWORD = "Novalya2026!"; // Mot de passe direct sur le site
+        const BACKEND_API_URL = "http://155.117.100.51:25578/api/register-identity";
+        const ADMIN_PASSWORD = "Novalya2026!"; // Mot de passe du panel admin
 
-        function checkPassword() {
-            const pwd = document.getElementById("adminPasswordInput").value;
-            if (pwd === ADMIN_PASSWORD) {
+        function getLocalRecords() {
+            return JSON.parse(localStorage.getItem('novalya_citizens') || '[]');
+        }
+
+        function getSanctions() {
+            return JSON.parse(localStorage.getItem('novalya_sanctions') || '[]');
+        }
+
+        function verifyPassword() {
+            const pwdInput = document.getElementById("adminPasswordInput").value;
+            if (pwdInput === ADMIN_PASSWORD) {
                 document.getElementById("loginCard").classList.add("hidden");
                 document.getElementById("adminDashboard").classList.remove("hidden");
-                renderCitizens();
-                renderLogs();
+                renderAdminPanel();
             } else {
-                alert("❌ Mot de passe administrateur incorrect.");
+                alert("❌ Mot de passe incorrect.");
             }
         }
 
-        // --- GESTION DES CITOYENS LOCALEMENT & LOGS ---
-        function getCitizens() {
-            return JSON.parse(localStorage.getItem('novalya_citizens') || '[{"nomRP":"Dupont","prenomRP":"Jean","ageRP":25,"discordPseudo":"jean_dp","discordID":"123456789012345678","status":"Actif"}]');
-        }
-
-        function saveCitizens(citizens) {
-            localStorage.setItem('novalya_citizens', JSON.stringify(citizens));
-        }
-
-        function getLogs() {
-            return JSON.parse(localStorage.getItem('novalya_logs') || '[]');
-        }
-
-        function addLog(action) {
-            const logs = getLogs();
-            logs.unshift(`[${new Date().toLocaleTimeString('fr-FR')}] ${action}`);
-            localStorage.setItem('novalya_logs', JSON.stringify(logs.slice(0, 20)));
-            renderLogs();
-        }
-
-        function renderCitizens() {
-            const citizens = getCitizens();
-            const tbody = document.getElementById("citizensTable");
-            const filter = document.getElementById("searchInput").value.toLowerCase();
+        function renderAdminPanel() {
+            const records = getLocalRecords();
+            const sanctions = getSanctions();
             
-            tbody.innerHTML = "";
-            document.getElementById("totalCitizens").textContent = citizens.length;
+            document.getElementById("totalCitizens").textContent = records.length;
+            document.getElementById("totalWarns").textContent = sanctions.filter(s => s.type === "WARN").length;
+            document.getElementById("totalBans").textContent = sanctions.filter(s => s.type === "BAN").length;
 
-            citizens.forEach((c, index) => {
-                if (c.prenomRP.toLowerCase().includes(filter) || c.nomRP.toLowerCase().includes(filter) || c.discordID.includes(filter)) {
-                    const tr = document.createElement("tr");
-                    tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition";
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 font-bold text-white">${c.prenomRP} ${c.nomRP}</td>
-                        <td class="px-6 py-4">${c.ageRP} ans</td>
-                        <td class="px-6 py-4 text-slate-400">${c.discordPseudo} <br><span class="text-xs text-blue-400">(${c.discordID})</span></td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-md text-xs font-semibold ${c.status === 'Banni' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
-                                ${c.status || 'Actif'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 flex gap-2">
-                            <button onclick="changeNickname('${c.nomRP}', '${c.prenomRP}', '${c.discordID}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition" title="Forcer changement pseudo">
-                                <i class="fa-solid fa-id-card"></i> Renommer
-                            </button>
-                            <button onclick="warnUser('${c.prenomRP} ${c.nomRP}', '${c.discordID}')" class="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-white text-xs rounded-lg transition" title="Avertissement">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Warn
-                            </button>
-                            <button onclick="toggleBan(${index})" class="px-3 py-1.5 ${c.status === 'Banni' ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-500'} text-white text-xs rounded-lg transition">
-                                <i class="fa-solid fa-ban"></i> ${c.status === 'Banni' ? 'Unban' : 'Ban'}
-                            </button>
-                            <button onclick="deleteCitizen(${index})" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg transition" title="Supprimer du registre">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                }
+            renderTable(records);
+            renderSanctionsTable(sanctions);
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById("adminTableBody");
+            tbody.innerHTML = "";
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-500">Aucun citoyen trouvé dans le registre.</td></tr>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const tr = document.createElement("tr");
+                tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-semibold text-white">${item.prenomRP || ''} ${item.nomRP || ''}</td>
+                    <td class="px-6 py-4">${item.ageRP || 'N/A'} ans</td>
+                    <td class="px-6 py-4 text-slate-400">${item.discordPseudo || 'Inconnu'} <br><span class="text-xs text-blue-400">(${item.discordID})</span></td>
+                    <td class="px-6 py-4 text-slate-400">${item.date || 'N/A'}</td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="forceSync('${item.nomRP}', '${item.prenomRP}', '${item.discordID}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition" title="Renommer via Bot">
+                            <i class="fa-solid fa-rotate"></i> Sync
+                        </button>
+                        <button onclick="deleteRecord(${index})" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs rounded-lg transition" title="Supprimer">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
         }
 
-        function renderLogs() {
-            const logs = getLogs();
-            const container = document.getElementById("logsContainer");
-            container.innerHTML = logs.map(l => `<div class="text-xs text-slate-400 font-mono">${l}</div>`).join('');
+        function filterCitizens() {
+            const query = document.getElementById("searchCitizen").value.toLowerCase();
+            const records = getLocalRecords();
+            const filtered = records.filter(item => 
+                (item.nomRP && item.nomRP.toLowerCase().includes(query)) ||
+                (item.prenomRP && item.prenomRP.toLowerCase().includes(query)) ||
+                (item.discordID && item.discordID.includes(query))
+            );
+            renderTable(filtered);
         }
 
-        // --- ACTIONS ADMIN (BOT & INTERFACE) ---
-        async function changeNickname(nomRP, prenomRP, discordID) {
-            addLog(`Tentative de changement de pseudo pour ${prenomRP} ${nomRP}...`);
+        function deleteRecord(index) {
+            if (confirm("Supprimer ce citoyen du registre ?")) {
+                const records = getLocalRecords();
+                records.splice(index, 1);
+                localStorage.setItem('novalya_citizens', JSON.stringify(records));
+                renderAdminPanel();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm("⚠️ ATTENTION : Cela va effacer TOUT le registre local. Continuer ?")) {
+                localStorage.removeItem('novalya_citizens');
+                localStorage.removeItem('novalya_sanctions');
+                renderAdminPanel();
+            }
+        }
+
+        async function forceSync(nomRP, prenomRP, discordID) {
             try {
-                const res = await fetch(`${BACKEND_API_URL}/rename`, {
+                const response = await fetch(BACKEND_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nomRP, prenomRP, discordID })
+                    body: JSON.stringify({ nomRP, prenomRP, ageRP: 20, discordPseudo: "Admin", discordID })
                 });
-                if (res.ok) {
-                    alert("✅ Ordre de changement de pseudo transmis au bot !");
-                    addLog(`[SUCCÈS] Pseudo modifié pour ${prenomRP} ${nomRP}`);
-                } else alert("⚠️ Le bot n'a pas pu modifier le pseudo.");
+                if (response.ok) alert("✅ Ordre de modification du pseudo envoyé au bot !");
+                else alert("❌ Erreur de réponse du serveur bot.");
             } catch (err) {
-                alert("❌ Impossible de joindre le bot.");
-                addLog(`[ERREUR] Bot injoignable pour ${discordID}`);
+                alert("❌ Impossible de joindre le bot Python.");
             }
         }
 
-        async function warnUser(fullName, discordID) {
-            const reason = prompt(`Raison de l'avertissement pour ${fullName} :`);
-            if (reason) {
-                addLog(`[WARN] ${fullName} - Raison: ${reason}`);
-                alert(`⚠️ Avertissement enregistré pour ${fullName}.`);
-            }
+        async function quickRename(event) {
+            event.preventDefault();
+            const discordID = document.getElementById("quickDiscordID").value.trim();
+            const newName = document.getElementById("quickName").value.trim();
+
+            const parts = newName.split(" ");
+            const prenomRP = parts[0] || newName;
+            const nomRP = parts.slice(1).join(" ") || "";
+
+            await forceSync(nomRP, prenomRP, discordID);
+            document.getElementById("quickRenameForm").reset();
         }
 
-        function toggleBan(index) {
-            const citizens = getCitizens();
-            const currentStatus = citizens[index].status;
-            citizens[index].status = currentStatus === 'Banni' ? 'Actif' : 'Banni';
-            saveCitizens(citizens);
-            addLog(`[BAN STATUS] ${citizens[index].prenomRP} ${citizens[index].nomRP} mis en : ${citizens[index].status}`);
-            renderCitizens();
+        function addSanction(event) {
+            event.preventDefault();
+            const targetID = document.getElementById("sanctionDiscordID").value.trim();
+            const type = document.getElementById("sanctionType").value;
+            const reason = document.getElementById("sanctionReason").value.trim();
+
+            const sanctions = getSanctions();
+            sanctions.unshift({ targetID, type, reason, date: new Date().toLocaleDateString('fr-FR') });
+            localStorage.setItem('novalya_sanctions', JSON.stringify(sanctions));
+
+            alert(`✅ Sanction [${type}] enregistrée pour l'utilisateur ${targetID}.`);
+            document.getElementById("sanctionForm").reset();
+            renderAdminPanel();
         }
 
-        function deleteCitizen(index) {
-            if (confirm("Voulez-vous supprimer ce citoyen du registre ?")) {
-                const citizens = getCitizens();
-                addLog(`[SUPPRESSION] Citoyen ${citizens[index].prenomRP} ${citizens[index].nomRP} supprimé`);
-                citizens.splice(index, 1);
-                saveCitizens(citizens);
-                renderCitizens();
-            }
-        }
+        function renderSanctionsTable(sanctions) {
+            const tbody = document.getElementById("sanctionsTableBody");
+            tbody.innerHTML = "";
 
-        function addManualCitizen() {
-            const prenomRP = prompt("Prénom RP :");
-            const nomRP = prompt("Nom RP :");
-            const ageRP = prompt("Âge RP :");
-            const discordPseudo = prompt("Pseudo Discord :");
-            const discordID = prompt("ID Discord :");
-
-            if (prenomRP && nomRP && discordID) {
-                const citizens = getCitizens();
-                citizens.unshift({ prenomRP, nomRP, ageRP, discordPseudo, discordID, status: "Actif" });
-                saveCitizens(citizens);
-                addLog(`[AJOUT] Nouveau citoyen ajouté : ${prenomRP} ${nomRP}`);
-                renderCitizens();
+            if (sanctions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-slate-500">Aucune sanction enregistrée.</td></tr>`;
+                return;
             }
-        }
 
-        async function sendGlobalAnnouncement() {
-            const msg = document.getElementById("announcementText").value;
-            if (!msg) return alert("Veuillez écrire un message.");
-            
-            addLog(`[ANNONCE] Envoi de l'annonce : ${msg}`);
-            try {
-                await fetch(`${BACKEND_API_URL}/announce`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: msg })
-                });
-                alert("📢 Annonce envoyée sur Discord !");
-                document.getElementById("announcementText").value = "";
-            } catch(e) {
-                alert("⚠️ Annonce enregistrée dans les logs (Bot hors-ligne).");
-            }
+            sanctions.forEach((s) => {
+                const tr = document.createElement("tr");
+                tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition";
+                const badgeColor = s.type === "BAN" ? "bg-red-500/20 text-red-400 border-red-500/30" : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 text-slate-300 font-mono">${s.targetID}</td>
+                    <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor}">${s.type}</span></td>
+                    <td class="px-6 py-4 text-slate-300">${s.reason}</td>
+                    <td class="px-6 py-4 text-slate-400">${s.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
     </script>
 </head>
@@ -195,11 +190,12 @@
                     </div>
                     <span class="font-extrabold text-2xl tracking-wider text-gradient">NOVALYA RP</span>
                 </div>
-                <div class="flex items-center gap-4 font-medium text-slate-300">
-                    <span class="px-3 py-1 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 text-xs font-semibold uppercase">
-                        <i class="fa-solid fa-shield-halved mr-1"></i> Staff Panel
-                    </span>
-                    <a href="https://discord.gg/RGBuPNVmmE" target="_blank" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition">
+                <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
+                    <a href="#admin" class="hover:text-blue-400 transition">Panel Admin</a>
+                    <a href="#reglement" class="hover:text-blue-400 transition">Règlement</a>
+                </div>
+                <div>
+                    <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
                         <i class="fa-brands fa-discord"></i> Discord
                     </a>
                 </div>
@@ -207,110 +203,192 @@
         </div>
     </nav>
 
-    <div class="pt-28 pb-16 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        <!-- CARD D'AUTHENTIFICATION -->
-        <div id="loginCard" class="max-w-md mx-auto my-20 glass p-8 rounded-2xl border border-violet-500/20 text-center space-y-6">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-blue-600 to-violet-600 flex items-center justify-center text-2xl text-white font-bold shadow-lg shadow-violet-500/30">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <div>
-                <h2 class="text-2xl font-black text-white">Connexion Administration</h2>
-                <p class="text-slate-400 text-sm mt-1">Entrez le mot de passe staff pour accéder au panel.</p>
-            </div>
-            <div>
-                <input type="password" id="adminPasswordInput" placeholder="Mot de passe..." class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-center focus:outline-none focus:border-violet-500 mb-4">
-                <button onclick="checkPassword()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold transition shadow-lg shadow-blue-500/20">
-                    Accéder au Panel
-                </button>
-            </div>
-        </div>
-
-        <!-- DASHBOARD ADMIN (MASQUÉ AVANT CONNEXION) -->
-        <div id="adminDashboard" class="hidden space-y-8">
+    <!-- Section Admin Principal -->
+    <section id="admin" class="min-h-screen pt-32 pb-24">
+        <div class="max-w-7xl mx-auto px-4">
             
-            <!-- Statistiques Rapides -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
-                    <span class="text-xs text-slate-400 font-bold uppercase">Citoyens Enregistrés</span>
-                    <div id="totalCitizens" class="text-3xl font-black text-white mt-1">0</div>
+            <!-- Carte de Connexion Sécurisée -->
+            <div id="loginCard" class="max-w-md mx-auto glass p-8 rounded-2xl border border-violet-500/30 shadow-2xl text-center">
+                <div class="w-16 h-16 rounded-2xl bg-violet-600/20 border border-violet-500/40 flex items-center justify-center mx-auto mb-4 text-violet-400 text-2xl">
+                    <i class="fa-solid fa-lock"></i>
                 </div>
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
-                    <span class="text-xs text-slate-400 font-bold uppercase">Serveur Discord API</span>
-                    <div class="text-lg font-bold text-emerald-400 mt-2 flex items-center gap-2">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Connecté (155.117.100.51:25578)
-                    </div>
-                </div>
-                <div class="glass p-6 rounded-2xl border-l-4 border-l-amber-500">
-                    <span class="text-xs text-slate-400 font-bold uppercase">Session Staff</span>
-                    <div class="text-lg font-bold text-white mt-2">Administrateur</div>
-                </div>
-            </div>
-
-            <!-- Barre d'outils et Recherche -->
-            <div class="glass p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="relative w-full sm:w-96">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-500"></i>
-                    <input type="text" id="searchInput" onkeyup="renderCitizens()" placeholder="Rechercher nom, prénom ou ID Discord..." class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
-                </div>
-                <div class="flex gap-3 w-full sm:w-auto">
-                    <button onclick="addManualCitizen()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-user-plus"></i> Ajouter un citoyen
+                <h2 class="text-2xl font-bold text-white mb-2">Accès Panel Administration</h2>
+                <p class="text-slate-400 text-sm mb-6">Veuillez saisir le mot de passe administrateur pour déverrouiller la gestion du serveur.</p>
+                <div class="space-y-4">
+                    <input type="password" id="adminPasswordInput" placeholder="Mot de passe admin" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-violet-500 text-center font-mono">
+                    <button onclick="verifyPassword()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold transition shadow-lg shadow-blue-600/30">
+                        Connexion au Panel
                     </button>
                 </div>
             </div>
 
-            <!-- Tableau Principale des Joueurs/Citoyens -->
-            <div class="glass rounded-2xl overflow-hidden border border-slate-800">
-                <div class="p-4 border-b border-slate-800 bg-slate-900/50">
-                    <h3 class="font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-users text-blue-400"></i> Registre Général des Joueurs
-                    </h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-800">
-                            <tr>
-                                <th class="px-6 py-4">Joueur RP</th>
-                                <th class="px-6 py-4">Âge</th>
-                                <th class="px-6 py-4">Discord (ID)</th>
-                                <th class="px-6 py-4">Statut</th>
-                                <th class="px-6 py-4">Actions Modération</th>
-                            </tr>
-                        </thead>
-                        <tbody id="citizensTable">
-                            <!-- JS Injection -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Section Annonce & Logs Système -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Envoi d'Annonce Discord -->
-                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-bullhorn text-violet-400"></i> Publier une Annonce Discord
-                    </h3>
-                    <textarea id="announcementText" rows="4" placeholder="Écrivez le message de votre annonce officielle ici..." class="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-violet-500"></textarea>
-                    <button onclick="sendGlobalAnnouncement()" class="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Envoyer sur le salon d'Annonces
+            <!-- Dashboard Admin (Caché tant que non authentifié) -->
+            <div id="adminDashboard" class="hidden space-y-10">
+                
+                <!-- Header & Stats -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 class="text-4xl font-black text-white flex items-center gap-3">
+                            <i class="fa-solid fa-user-gear text-violet-500"></i> Panel Administrateur
+                        </h1>
+                        <p class="text-slate-400 mt-1">Gestion centrale du registre civil, modération et commandes bot Discord.</p>
+                    </div>
+                    <button onclick="clearAllData()" class="px-4 py-2 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 text-xs font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Purger le registre local
                     </button>
                 </div>
 
-                <!-- Logs d'Administration -->
-                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-terminal text-emerald-400"></i> Journal des Actions Staff (Logs)
-                    </h3>
-                    <div id="logsContainer" class="p-4 rounded-xl bg-slate-950 border border-slate-800 h-44 overflow-y-auto space-y-1">
-                        <!-- Logs JS -->
+                <!-- Cartes de statistiques -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
+                        <span class="text-xs uppercase text-slate-400 font-semibold">Citoyens Enregistrés</span>
+                        <div id="totalCitizens" class="text-3xl font-black text-white mt-2">0</div>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border-l-4 border-l-yellow-500">
+                        <span class="text-xs uppercase text-slate-400 font-semibold">Avertissements</span>
+                        <div id="totalWarns" class="text-3xl font-black text-yellow-400 mt-2">0</div>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border-l-4 border-l-red-500">
+                        <span class="text-xs uppercase text-slate-400 font-semibold">Bannissements</span>
+                        <div id="totalBans" class="text-3xl font-black text-red-400 mt-2">0</div>
                     </div>
                 </div>
-            </div>
 
+                <!-- Grille d'Outils Rapides -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <!-- Outil 1 : Forcer le changement de pseudo -->
+                    <div class="glass p-6 rounded-2xl border border-blue-500/20">
+                        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-signature text-blue-400"></i> Modification Rapide de Pseudo
+                        </h3>
+                        <form id="quickRenameForm" onsubmit="quickRename(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">ID Discord du Joueur</label>
+                                <input type="text" id="quickDiscordID" required pattern="\d{17,19}" placeholder="ex: 123456789012345678" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Nouveau Pseudo RP (Prénom Nom)</label>
+                                <input type="text" id="quickName" required placeholder="ex: Jean Dupont" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition">
+                                Appliquer la modification via le Bot
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Outil 2 : Ajouter une Sanction -->
+                    <div class="glass p-6 rounded-2xl border border-red-500/20">
+                        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-gavel text-red-400"></i> Module de Sanction Modération
+                        </h3>
+                        <form id="sanctionForm" onsubmit="addSanction(event)" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">ID Discord</label>
+                                    <input type="text" id="sanctionDiscordID" required pattern="\d{17,19}" placeholder="ID Joueur" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-red-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Type de Sanction</label>
+                                    <select id="sanctionType" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-red-500">
+                                        <option value="WARN">Avertissement (Warn)</option>
+                                        <option value="BAN">Bannissement</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Raison de la sanction</label>
+                                <input type="text" id="sanctionReason" required placeholder="ex: NoWinRP répétitif / HRP Vocal" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-red-500">
+                            </div>
+                            <button type="submit" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition">
+                                Enregistrer la Sanction
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tableau du Registre Civil -->
+                <div class="glass rounded-2xl overflow-hidden border border-slate-800 p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-address-book text-violet-400 mr-2"></i> Registre Civil des Citoyens</h3>
+                        <input type="text" id="searchCitizen" oninput="filterCitizens()" placeholder="🔍 Rechercher un Nom ou ID..." class="px-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-violet-500 w-full sm:w-64">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+                                <tr>
+                                    <th class="px-6 py-4">Nom RP</th>
+                                    <th class="px-6 py-4">Âge</th>
+                                    <th class="px-6 py-4">Discord (ID)</th>
+                                    <th class="px-6 py-4">Date</th>
+                                    <th class="px-6 py-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tableau des Sanctions -->
+                <div class="glass rounded-2xl overflow-hidden border border-slate-800 p-6">
+                    <h3 class="text-xl font-bold text-white mb-6"><i class="fa-solid fa-shield-halved text-red-400 mr-2"></i> Historique des Sanctions</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+                                <tr>
+                                    <th class="px-6 py-4">ID Discord</th>
+                                    <th class="px-6 py-4">Type</th>
+                                    <th class="px-6 py-4">Raison</th>
+                                    <th class="px-6 py-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sanctionsTableBody">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Section Règlement -->
+    <section id="reglement" class="py-24 bg-slate-900/50">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">📜 Règlement Officiel Novalya RP</h2>
+                <p class="text-slate-400">Règles fondamentales régissant le serveur d'Amboise.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
+                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> 1. Règles Générales & HRP</h3>
+                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
+                        <li>Respect obligatoire envers tous les joueurs et membres du staff.</li>
+                        <li>Interdiction stricte du HRP en jeu vocal.</li>
+                        <li>Toute triche ou utilisation de glitchs est passible de ban permanent.</li>
+                    </ul>
+                </div>
+
+                <div class="glass p-6 rounded-2xl border-l-4 border-l-violet-500">
+                    <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-user-shield text-violet-400 mr-2"></i> 2. Fairplay & Immersion (RP)</h3>
+                    <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
+                        <li><strong>FearRP :</strong> Valorisez votre vie à tout moment.</li>
+                        <li><strong>PainRP :</strong> Simulez les blessures et accidents avec cohérence.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+        <p>&copy; 2026 Novalya RP - Serveur Nova-Life Amboise. Tous droits réservés.</p>
+    </footer>
 
 </body>
 </html>
