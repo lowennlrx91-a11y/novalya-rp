@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novalya RP - Registre Civile & Règlement Officiel</title>
+    <title>Novalya RP - Registre Civil & Règlement Officiel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -20,74 +20,70 @@
         }
     </style>
     <script>
-        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1558265104238121120/Tc3d0M8VtWqvEEORiGLiWS7g79c_YTv1Aq7rceipnNleaBgGTzaxNjh5d2IXcupI8VbE";
-        
-        // Remplacez par l'URL de votre serveur Bot quand il sera prêt (ex: http://votre-ip:3000/api/rename)
-        const BOT_API_URL = "https://votre-bot-api.com/api/register-identity";
+        // SÉCURITÉ : L'URL pointe uniquement vers VOTRE serveur API Backend (jamais vers Discord directement)
+        const BACKEND_API_URL = "https://votre-serveur-backend.com/api/register-identity";
+
+        // Nettoyage anti-XSS simple pour sécuriser les données saisies
+        function sanitizeInput(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML.trim();
+        }
 
         async function submitIdentityDocument(event) {
             event.preventDefault();
 
-            const nomRP = document.getElementById("nomRP").value.trim();
-            const prenomRP = document.getElementById("prenomRP").value.trim();
-            const discordPseudo = document.getElementById("discordPseudo").value.trim();
-            const discordID = document.getElementById("discordID").value.trim();
-            const ageRP = document.getElementById("ageRP").value.trim();
+            const submitBtn = document.getElementById("submitBtn");
+            const btnText = document.getElementById("btnText");
+            
+            // Récupération et nettoyage des champs
+            const nomRP = sanitizeInput(document.getElementById("nomRP").value);
+            const prenomRP = sanitizeInput(document.getElementById("prenomRP").value);
+            const discordPseudo = sanitizeInput(document.getElementById("discordPseudo").value);
+            const discordID = sanitizeInput(document.getElementById("discordID").value);
+            const ageRP = parseInt(document.getElementById("ageRP").value, 10);
 
-            const formattedNickname = `${prenomRP}${nomRP}`;
+            // Validation de l'ID Discord (17 à 19 chiffres)
+            if (!/^\d{17,19}$/.test(discordID)) {
+                alert("❌ L'ID Discord saisi est invalide (il doit comporter entre 17 et 19 chiffres).");
+                return;
+            }
 
-            // 1. Log envoyé sur Discord via Webhook
-            const webhookPayload = {
-                content: `<@${discordID}>`,
-                embeds: [{
-                    title: "📄 NOUVEL ENREGISTREMENT DE CITOYENNETÉ - NOVALYA RP",
-                    description: "Un joueur a soumis son document d'identité sur le site web.",
-                    color: 3447003,
-                    fields: [
-                        { name: "👤 Nom RP", value: nomRP, inline: true },
-                        { name: "👤 Prénom RP", value: prenomRP, inline: true },
-                        { name: "🎂 Âge RP", value: ageRP + " ans", inline: true },
-                        { name: "🎧 Pseudo Discord", value: discordPseudo, inline: true },
-                        { name: "🆔 ID Discord", value: discordID, inline: true },
-                        { name: "🏷️ Nouveau Pseudo Serveur", value: `\`${formattedNickname}\``, inline: false }
-                    ],
-                    footer: { text: "Novalya RP • Préfecture d'Amboise" },
-                    timestamp: new Date().toISOString()
-                }]
-            };
+            // Désactivation du bouton pour éviter le spam/double clic
+            submitBtn.disabled = true;
+            submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+            btnText.textContent = "Traitement en cours...";
 
-            // Envoi Webhook
             try {
-                await fetch(DISCORD_WEBHOOK_URL, {
+                // Envoi des données vers VOTRE backend
+                const response = await fetch(BACKEND_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(webhookPayload)
+                    body: JSON.stringify({
+                        nomRP,
+                        prenomRP,
+                        ageRP,
+                        discordPseudo,
+                        discordID
+                    })
                 });
-            } catch (err) {
-                console.error("Erreur Webhook:", err);
-            }
 
-            // 2. Envoi des données vers le Bot Discord (pour changement automatique du pseudo)
-            if (BOT_API_URL && !BOT_API_URL.includes("votre-bot-api.com")) {
-                try {
-                    await fetch(BOT_API_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            discordId: discordID,
-                            nickname: formattedNickname,
-                            nomRP: nomRP,
-                            prenomRP: prenomRP,
-                            ageRP: ageRP
-                        })
-                    });
-                } catch (err) {
-                    console.error("Erreur API Bot:", err);
+                if (response.ok) {
+                    document.getElementById("documentForm").reset();
+                    alert("✅ Votre document d'identité a été transmis avec succès !");
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    alert(`❌ Erreur : ${errorData.message || "Impossible d'enregistrer le document."}`);
                 }
+            } catch (err) {
+                console.error("Erreur d'envoi:", err);
+                alert("❌ Une erreur réseau est survenue. Veuillez réessayer plus tard.");
+            } finally {
+                // Réactivation du bouton
+                submitBtn.disabled = false;
+                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                btnText.textContent = "Valider le document & Synchroniser mon pseudo";
             }
-
-            document.getElementById("documentForm").reset();
-            alert("✅ Votre document d'identité a été enregistré ! Le staff et le bot Discord vont traiter la mise à jour de votre pseudo.");
         }
     </script>
 </head>
@@ -109,7 +105,7 @@
                     <a href="#reglement" class="hover:text-blue-400 transition">Règlement</a>
                 </div>
                 <div>
-                    <a href="https://discord.gg/RGBuPNVmmE" target="_blank" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+                    <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
                         <i class="fa-brands fa-discord"></i> Discord
                     </a>
                 </div>
@@ -152,27 +148,27 @@
             <form id="documentForm" onsubmit="submitIdentityDocument(event)" class="glass p-8 rounded-2xl space-y-6 border border-blue-500/20">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Nom RP (Nom de jeu)</label>
-                        <input type="text" id="nomRP" required placeholder="ex: Dupont" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                        <label for="nomRP" class="block text-sm font-medium text-slate-300 mb-2">Nom RP (Nom de jeu)</label>
+                        <input type="text" id="nomRP" required maxlength="30" placeholder="ex: Dupont" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Prénom RP (Prénom de jeu)</label>
-                        <input type="text" id="prenomRP" required placeholder="ex: Jean" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                        <label for="prenomRP" class="block text-sm font-medium text-slate-300 mb-2">Prénom RP (Prénom de jeu)</label>
+                        <input type="text" id="prenomRP" required maxlength="30" placeholder="ex: Jean" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Âge RP</label>
+                        <label for="ageRP" class="block text-sm font-medium text-slate-300 mb-2">Âge RP</label>
                         <input type="number" id="ageRP" required min="18" max="99" placeholder="ex: 25" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Pseudo Discord</label>
-                        <input type="text" id="discordPseudo" required placeholder="ex: mon_pseudo" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                        <label for="discordPseudo" class="block text-sm font-medium text-slate-300 mb-2">Pseudo Discord</label>
+                        <input type="text" id="discordPseudo" required maxlength="32" placeholder="ex: mon_pseudo" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">ID Discord</label>
-                        <input type="text" id="discordID" required placeholder="ex: 123456789012345678" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
+                        <label for="discordID" class="block text-sm font-medium text-slate-300 mb-2">ID Discord</label>
+                        <input type="text" id="discordID" required pattern="\d{17,19}" placeholder="ex: 123456789012345678" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500">
                     </div>
                 </div>
 
@@ -181,8 +177,8 @@
                     <strong>Connexion Bot & Webhook :</strong> La validation transmet votre fiche sur le salon de logs et demande à notre bot de modifier votre pseudo Discord au format <code>Prénom Nom</code>.
                 </div>
 
-                <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition">
-                    Valider le document & Synchroniser mon pseudo
+                <button type="submit" id="submitBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2">
+                    <span id="btnText">Valider le document & Synchroniser mon pseudo</span>
                 </button>
             </form>
         </div>
@@ -202,7 +198,7 @@
                     <h3 class="text-xl font-bold text-white mb-3"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> 1. Règles Générales & HRP</h3>
                     <ul class="text-slate-300 text-sm space-y-2 list-disc list-inside">
                         <li>Le respect entre joueurs et envers l'équipe du staff est primordial.</li>
-                        <li>Le HRP (Hors-Roleplay) en jeu vocal est strictement interdit.</li>
+                        <li>Le HRP (Hors-Roleplay) en jeu vocal est strictly interdit.</li>
                         <li>L'utilisation de bugs, glitchs ou mod menu entraîne un ban définitif.</li>
                         <li>Chaque joueur doit posséder un micro de bonne qualité.</li>
                     </ul>
