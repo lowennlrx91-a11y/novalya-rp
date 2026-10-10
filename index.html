@@ -1,182 +1,168 @@
-<!-- Navigation Header -->
-<nav class="fixed top-0 left-0 right-0 z-50 glass">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-20">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-violet-600 flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">
-                    N
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novalya RP - Serveur Nova-Life Amboise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- En-tête de navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-violet-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/30">
+                        N
+                    </div>
+                    <span class="font-extrabold text-2xl tracking-wider text-gradient">NOVALYA RP</span>
                 </div>
-                <span class="font-extrabold text-2xl tracking-wider text-gradient">NOVALYA RP</span>
+                <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
+                    <a href="#accueil" class="hover:text-blue-400 transition">Accueil</a>
+                    <a href="#presentation" class="hover:text-blue-400 transition">À propos</a>
+                    <a href="#factions" class="hover:text-blue-400 transition">Factions & Métiers</a>
+                    <a href="#rejoindre" class="hover:text-blue-400 transition">Nous rejoindre</a>
+                </div>
+                <div>
+                    <a href="https://discord.gg" target="_blank" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+                        <i class="fa-brands fa-discord"></i> Discord
+                    </a>
+                </div>
             </div>
-            <div class="hidden md:flex items-center space-x-8 font-medium text-slate-300">
-                <a href="#accueil" class="hover:text-blue-400 transition">Accueil</a>
-                <a href="#presentation" class="hover:text-blue-400 transition">À propos</a>
-                <a href="#factions" class="hover:text-blue-400 transition">Factions & Métiers</a>
-                <a href="#regles" class="hover:text-blue-400 transition">Règlement</a>
-                <a href="#rejoindre" class="hover:text-blue-400 transition">Nous Rejoindre</a>
-            </div>
-            <div>
-                <a href="https://discord.gg" target="_blank" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
-                    <i class="fa-brands fa-discord"></i> Discord
+        </div>
+    </nav>
+
+    <!-- Section Héros -->
+    <section id="accueil" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/30 via-slate-950 to-slate-950"></div>
+        <div class="relative max-w-5xl mx-auto px-4 text-center z-10 py-20">
+            <span class="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest inline-block mb-6">
+                Serveur Nova-Life • Carte Amboise
+            </span>
+            <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-white mb-6">
+                Vivez une aventure RP unique sur <span class="text-gradient">Novalya RP</span>
+            </h1>
+            <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                Plongez au cœur de la ville d'Amboise sur Nova Life. Incarnez un citoyen, intégrez la fonction publique ou bâtissez votre propre empire financier !
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="#rejoindre" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-xl shadow-blue-500/25 transition">
+                    Rejoindre le serveur
+                </a>
+                <a href="https://discord.gg" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-xl glass hover:bg-slate-800/80 text-white font-semibold text-lg transition flex items-center justify-center gap-3">
+                    <i class="fa-brands fa-discord text-blue-400"></i> Rejoindre notre Discord
                 </a>
             </div>
         </div>
-    </div>
-</nav>
+    </section>
 
-<!-- Hero Section -->
-<section id="accueil" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden hero-bg">
-    <div class="relative max-w-5xl mx-auto px-4 text-center z-10 py-20">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest mb-6">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Serveur Nova-Life • Carte Amboise
+    <!-- Section Présentation -->
+    <section id="presentation" class="py-24 relative bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Pourquoi choisir Novalya RP ?</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Une expérience immersive et optimisée pour la communauté Nova-Life.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass p-8 rounded-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-city"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Carte Amboise</h3>
+                    <p class="text-slate-400 leading-relaxed">Profitez du cadre de la carte Amboise aménagée pour favoriser des scènes RP riches et variées.</p>
+                </div>
+                <div class="glass p-8 rounded-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Équipe à l'écoute</h3>
+                    <p class="text-slate-400 leading-relaxed">Un staff réactif pour encadrer les joueurs et assurer la qualité du Roleplay au quotidien.</p>
+                </div>
+                <div class="glass p-8 rounded-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Systèmes Exclusifs</h3>
+                    <p class="text-slate-400 leading-relaxed">Des métiers, entreprises et fonctionnalités adaptés pour un gameplay fluide.</p>
+                </div>
+            </div>
         </div>
-        <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-white mb-6">
-            Vivez une aventure RP unique sur <span class="text-gradient">Novalya RP</span>
-        </h1>
-        <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Plongez au cœur de la ville d'Amboise sur Nova Life. Incarnez un citoyen, intégrez la fonction publique ou bâtissez votre propre empire financier !
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href="#rejoindre" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold text-lg shadow-xl shadow-blue-500/25 transition">
-                Rejoindre le serveur
+    </section>
+
+    <!-- Section Factions -->
+    <section id="factions" class="py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Factions & Métiers</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Choisissez votre voie et prenez place dans la société d'Amboise.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass p-6 rounded-2xl border-t-4 border-t-blue-500">
+                    <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-shield-halved text-blue-400 mr-2"></i> Gendarmerie</h3>
+                    <p class="text-slate-400 text-sm">Maintenez l'ordre et veillez au respect du code de la route et des lois.</p>
+                </div>
+                <div class="glass p-6 rounded-2xl border-t-4 border-t-red-500">
+                    <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-truck-medical text-red-400 mr-2"></i> Pompiers / SAMU</h3>
+                    <p class="text-slate-400 text-sm">Secourez les citoyens en détresse et intervenez sur les urgences de la ville.</p>
+                </div>
+                <div class="glass p-6 rounded-2xl border-t-4 border-t-yellow-500">
+                    <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-id-card text-yellow-400 mr-2"></i> Auto-École</h3>
+                    <p class="text-slate-400 text-sm">Formez les nouveaux arrivants et faites passer le permis de conduire.</p>
+                </div>
+                <div class="glass p-6 rounded-2xl border-t-4 border-t-purple-500">
+                    <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-building text-purple-400 mr-2"></i> Entreprises</h3>
+                    <p class="text-slate-400 text-sm">Ouvrez votre propre commerce, concessionnaire, garage ou service privé.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Rejoindre -->
+    <section id="rejoindre" class="py-24 bg-slate-900/50">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-6">Comment nous rejoindre ?</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 text-left">
+                <div class="glass p-6 rounded-xl">
+                    <span class="text-blue-400 font-bold text-xl block mb-2">01.</span>
+                    <h4 class="font-bold text-white mb-2">Rejoindre le Discord</h4>
+                    <p class="text-sm text-slate-400">Accédez à notre serveur Discord pour lire le règlement et prendre connaissance des annonces.</p>
+                </div>
+                <div class="glass p-6 rounded-xl">
+                    <span class="text-violet-400 font-bold text-xl block mb-2">02.</span>
+                    <h4 class="font-bold text-white mb-2">Lancer Nova-Life</h4>
+                    <p class="text-sm text-slate-400">Lancez votre jeu Nova-Life et rendez-vous dans la recherche de serveurs.</p>
+                </div>
+                <div class="glass p-6 rounded-xl">
+                    <span class="text-emerald-400 font-bold text-xl block mb-2">03.</span>
+                    <h4 class="font-bold text-white mb-2">Se connecter</h4>
+                    <p class="text-sm text-slate-400">Recherchez "Novalya RP" et rejoignez-nous en jeu !</p>
+                </div>
+            </div>
+            <a href="https://discord.gg" target="_blank" class="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition">
+                <i class="fa-brands fa-discord"></i> Rejoindre notre serveur Discord
             </a>
-            <button onclick="copyIP()" class="w-full sm:w-auto px-8 py-4 rounded-xl glass hover:bg-slate-800/80 text-white font-semibold text-lg transition flex items-center justify-center gap-3">
-                <i class="fa-solid fa-server text-blue-400"></i> <span id="ip-text">Rechercher Novalya RP</span>
-            </button>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Section A Propos -->
-<section id="presentation" class="py-24 relative bg-slate-900/50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Pourquoi choisir Novalya RP ?</h2>
-            <p class="text-slate-400 max-w-2xl mx-auto">Un serveur pensé par des passionnés de Roleplay pour offrir la meilleure expérience sur Nova Life.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="glass p-8 rounded-2xl transition hover:-translate-y-1">
-                <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl mb-6">
-                    <i class="fa-solid fa-map-location-dot"></i>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">Carte d'Amboise</h3>
-                <p class="text-slate-400 leading-relaxed">Une carte réaliste et adaptée offrant des zones urbaines et rurales variées pour vos scènes RP.</p>
-            </div>
-            <div class="glass p-8 rounded-2xl transition hover:-translate-y-1">
-                <div class="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-2xl mb-6">
-                    <i class="fa-solid fa-users-gear"></i>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">Staff Actif & À l'écoute</h3>
-                <p class="text-slate-400 leading-relaxed">Une équipe de modération disponible pour vous accompagner et garant de la qualité du jeu.</p>
-            </div>
-            <div class="glass p-8 rounded-2xl transition hover:-translate-y-1">
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl mb-6">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">Économie Équilibrée</h3>
-                <p class="text-slate-400 leading-relaxed">Un système économique réaliste favorisant le travail, les entreprises et le commerce légal ou illégal.</p>
-            </div>
-        </div>
-    </div>
-</section>
+    <!-- Pied de page -->
+    <footer class="py-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+        <p>&copy; 2026 Novalya RP - Serveur Nova-Life Amboise. Tous droits réservés.</p>
+    </footer>
 
-<!-- Factions & Métiers -->
-<section id="factions" class="py-24">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Factions & Métiers</h2>
-            <p class="text-slate-400 max-w-2xl mx-auto">Incarnez le rôle qui vous convient le mieux dans la ville d'Amboise.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="glass p-6 rounded-2xl border-t-4 border-t-blue-500">
-                <div class="text-blue-400 text-3xl mb-4"><i class="fa-solid fa-shield-halved"></i></div>
-                <h3 class="text-xl font-bold text-white mb-2">Gendarmerie</h3>
-                <p class="text-slate-400 text-sm">Maintenez l'ordre public, patrouillez dans Amboise et veillez au respect des lois.</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border-t-4 border-t-red-500">
-                <div class="text-red-400 text-3xl mb-4"><i class="fa-solid fa-truck-medical"></i></div>
-                <h3 class="text-xl font-bold text-white mb-2">Sapeurs-Pompiers</h3>
-                <p class="text-slate-400 text-sm">Intervenez sur les accidents, secours aux victimes et incendies en ville.</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border-t-4 border-t-amber-500">
-                <div class="text-amber-400 text-3xl mb-4"><i class="fa-solid fa-wrench"></i></div>
-                <h3 class="text-xl font-bold text-white mb-2">Dépannage & Garages</h3>
-                <p class="text-slate-400 text-sm">Réparez, remorquez et customisez les véhicules des citoyens d'Amboise.</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border-t-4 border-t-purple-500">
-                <div class="text-purple-400 text-3xl mb-4"><i class="fa-solid fa-briefcase"></i></div>
-                <h3 class="text-xl font-bold text-white mb-2">Entreprises & Civil</h3>
-                <p class="text-slate-400 text-sm">Ouvrez votre commerce, devenez chauffeur, ou développez vos projets personnels.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Règlement Rapide -->
-<section id="regles" class="py-24 bg-slate-900/50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Règles Principales</h2>
-            <p class="text-slate-400">Pour un jeu agréable pour tous, veuillez respecter ces principes de base.</p>
-        </div>
-        <div class="space-y-4">
-            <div class="glass p-6 rounded-xl">
-                <h3 class="text-lg font-bold text-blue-400 mb-1"><i class="fa-solid fa-circle-info mr-2"></i> Respect du Fair-Play</h3>
-                <p class="text-slate-300 text-sm">Privilégiez toujours la qualité des scènes RP à la victoire. Acceptez la défaite si la scène le demande.</p>
-            </div>
-            <div class="glass p-6 rounded-xl">
-                <h3 class="text-lg font-bold text-blue-400 mb-1"><i class="fa-solid fa-circle-info mr-2"></i> Interdiction du HRP en jeu</h3>
-                <p class="text-slate-300 text-sm">Restez en personnage en toutes circonstances. Pour tout problème, privilégiez un ticket Discord après la scène.</p>
-            </div>
-            <div class="glass p-6 rounded-xl">
-                <h3 class="text-lg font-bold text-blue-400 mb-1"><i class="fa-solid fa-circle-info mr-2"></i> PainRP et FearRP obligatoire</h3>
-                <p class="text-slate-300 text-sm">Simulez la douleur en cas de choc ou blessure, et craignez pour la vie de votre personnage sous la menace d'une arme.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Comment rejoindre -->
-<section id="rejoindre" class="py-24">
-    <div class="max-w-4xl mx-auto px-4 text-center">
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-6">Comment nous rejoindre ?</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 text-left">
-            <div class="glass p-6 rounded-xl">
-                <span class="text-blue-400 font-extrabold text-2xl block mb-2">01</span>
-                <h4 class="font-bold text-white mb-2">Rejoindre Discord</h4>
-                <p class="text-sm text-slate-400">Inscrivez-vous sur le Discord pour lire le règlement et prendre vos rôles.</p>
-            </div>
-            <div class="glass p-6 rounded-xl">
-                <span class="text-violet-400 font-extrabold text-2xl block mb-2">02</span>
-                <h4 class="font-bold text-white mb-2">Lancer Nova Life</h4>
-                <p class="text-sm text-slate-400">Assurez-vous d'avoir installé le jeu Nova-Life et d'être à jour.</p>
-            </div>
-            <div class="glass p-6 rounded-xl">
-                <span class="text-emerald-400 font-extrabold text-2xl block mb-2">03</span>
-                <h4 class="font-bold text-white mb-2">Rechercher le serveur</h4>
-                <p class="text-sm text-slate-400">Dans la liste des serveurs, cherchez **Novalya RP** et lancez votre aventure !</p>
-            </div>
-        </div>
-        <a href="https://discord.gg" target="_blank" class="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition">
-            <i class="fa-brands fa-discord text-xl"></i> Accéder au Discord Officiel
-        </a>
-    </div>
-</section>
-
-<!-- Footer -->
-<footer class="py-8 border-t border-slate-800 text-center text-slate-500 text-sm">
-    <p>&copy; Novalya RP - Serveur Nova-Life Amboise. Tous droits réservés.</p>
-</footer>
-
-<!-- JS Utility -->
-<script>
-    function copyIP() {
-        navigator.clipboard.writeText("Novalya RP");
-        const btnText = document.getElementById("ip-text");
-        const originalText = btnText.innerText;
-        btnText.innerText = "Nom copié !";
-        setTimeout(() => {
-            btnText.innerText = originalText;
-        }, 2000);
-    }
-</script>
+</body>
+</html>
