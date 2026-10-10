@@ -1,143 +1,572 @@
-from pathlib import Path
-import shutil, os
-
-src = Path("/mnt/data/image(20261010-021321).png")
-outdir = Path("/mnt/data/novalya_site")
-outdir.mkdir(exist_ok=True)
-shutil.copy2(src, outdir / "novalya-banner.png")
-
-html = r'''<!DOCTYPE html>
+```html
+<!DOCTYPE html>
 <html lang="fr" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#080d1b">
-  <title>Novalya RP — Nova-Life Amboise</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * { box-sizing: border-box; }
-    body { background:#080d1b; color:#f8fafc; font-family:Inter,system-ui,sans-serif; }
-    .glass { background:rgba(15,23,42,.82); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,.1); }
-    .gradient { background:linear-gradient(120deg,#60a5fa,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent; }
-    .hero { background:radial-gradient(ellipse at top,rgba(37,99,235,.18),transparent 55%),#080d1b; }
-    .card { background:linear-gradient(145deg,rgba(30,41,59,.72),rgba(15,23,42,.8)); border:1px solid rgba(148,163,184,.13); transition:.25s; }
-    .card:hover { transform:translateY(-4px); border-color:rgba(96,165,250,.45); }
-    .btn { background:linear-gradient(110deg,#2563eb,#7c3aed); transition:.2s; }
-    .btn:hover { filter:brightness(1.12); transform:translateY(-2px); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080d1b">
+    <title>Novalya RP — Nova-Life Amboise</title>
+    <meta name="description" content="Bienvenue sur Novalya RP, votre communauté Nova-Life Amboise. Découvrez notre univers roleplay et rejoignez notre Discord.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #080d1b;
+            color: #f8fafc;
+            font-family: Inter, Arial, sans-serif;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .gradient {
+            background: linear-gradient(120deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero {
+            background:
+                radial-gradient(ellipse at top, rgba(37,99,235,.22), transparent 55%),
+                radial-gradient(ellipse at bottom right, rgba(124,58,237,.12), transparent 45%),
+                #080d1b;
+        }
+
+        .card {
+            background: linear-gradient(145deg, rgba(30,41,59,.75), rgba(15,23,42,.9));
+            border: 1px solid rgba(148,163,184,.15);
+            transition: .25s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(96,165,250,.5);
+        }
+
+        .btn {
+            background: linear-gradient(110deg, #2563eb, #7c3aed);
+            transition: .2s;
+        }
+
+        .btn:hover {
+            filter: brightness(1.15);
+            transform: translateY(-2px);
+        }
+
+        .banner {
+            box-shadow: 0 20px 80px rgba(79,70,229,.2);
+        }
+
+        section {
+            scroll-margin-top: 90px;
+        }
+    </style>
 </head>
+
 <body>
-  <nav class="fixed top-0 inset-x-0 z-50 glass">
-    <div class="max-w-7xl mx-auto px-5 h-[76px] flex items-center justify-between gap-4">
-      <a href="#accueil" class="flex items-center gap-3">
-        <img src="novalya-banner.png" alt="Logo Novalya RP" class="w-12 h-12 rounded-lg object-cover object-center">
-        <span class="font-black tracking-wider text-xl gradient">NOVALYA RP</span>
-      </a>
-      <div class="hidden md:flex gap-7 text-sm text-slate-300 font-semibold">
-        <a href="#accueil" class="hover:text-blue-400">Accueil</a>
-        <a href="#presentation" class="hover:text-blue-400">Présentation</a>
-        <a href="#univers" class="hover:text-blue-400">Notre univers</a>
-        <a href="#reglement" class="hover:text-blue-400">Règlement</a>
-      </div>
-      <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="btn rounded-xl px-4 py-3 font-bold text-sm">
-        <i class="fa-brands fa-discord mr-2"></i>Discord
-      </a>
-    </div>
-  </nav>
 
-  <header id="accueil" class="hero min-h-screen flex items-center pt-24 pb-16">
+<!-- NAVIGATION -->
+<nav class="fixed top-0 inset-x-0 z-50 glass">
+    <div class="max-w-7xl mx-auto px-5 h-20 flex items-center justify-between gap-4">
+
+        <a href="#accueil" class="flex items-center gap-3">
+            <img
+                src="novalya-banner.png"
+                alt="Logo Novalya RP"
+                class="w-12 h-12 rounded-xl object-cover"
+            >
+            <span class="font-black tracking-wider text-xl gradient">
+                NOVALYA RP
+            </span>
+        </a>
+
+        <div class="hidden md:flex gap-7 text-sm text-slate-300 font-semibold">
+            <a href="#accueil" class="hover:text-blue-400">Accueil</a>
+            <a href="#presentation" class="hover:text-blue-400">Présentation</a>
+            <a href="#univers" class="hover:text-blue-400">Notre univers</a>
+            <a href="#reglement" class="hover:text-blue-400">Règlement</a>
+        </div>
+
+        <a
+            href="https://discord.gg/RGBuPNVmmE"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn rounded-xl px-4 py-3 font-bold text-sm"
+        >
+            <i class="fa-brands fa-discord mr-2"></i>Discord
+        </a>
+
+    </div>
+</nav>
+
+
+<!-- ACCUEIL -->
+<header id="accueil" class="hero min-h-screen flex items-center pt-28 pb-16">
+
     <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-2 gap-12 items-center">
-      <div>
-        <span class="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-200 mb-7">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Nova-Life · Carte Amboise
-        </span>
-        <h1 class="text-5xl sm:text-7xl font-black leading-tight mb-6">Bienvenue sur <span class="gradient">Novalya RP</span></h1>
-        <p class="text-lg text-slate-300 leading-8 mb-5">Entrez dans un univers où chaque rencontre peut changer votre destin, où chaque décision compte et où votre histoire ne ressemble à aucune autre.</p>
-        <p class="text-slate-400 leading-8 mb-8">Construisez votre carrière, développez vos projets, faites de nouvelles rencontres et trouvez votre place dans la ville. Que vous soyez là pour vivre des scènes mémorables ou simplement découvrir la communauté, votre aventure commence ici.</p>
-        <div class="flex flex-col sm:flex-row gap-4">
-          <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="btn rounded-xl px-7 py-4 font-extrabold text-center"><i class="fa-brands fa-discord mr-2"></i>Rejoindre la communauté</a>
-          <a href="#presentation" class="glass rounded-xl px-7 py-4 font-bold text-center hover:bg-white/10">Découvrir Novalya <i class="fa-solid fa-arrow-down ml-2"></i></a>
+
+        <div>
+
+            <span class="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-200 mb-7">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Nova-Life · Carte Amboise
+            </span>
+
+            <h1 class="text-5xl sm:text-7xl font-black leading-tight mb-6">
+                Bienvenue sur
+                <span class="gradient">Novalya RP</span>
+            </h1>
+
+            <p class="text-lg text-slate-300 leading-8 mb-5">
+                Bienvenue à vous, futurs habitants de Novalya !
+                Ici, chaque joueur peut écrire sa propre histoire,
+                rencontrer de nouvelles personnes et construire
+                son avenir au cœur d'un univers roleplay vivant.
+            </p>
+
+            <p class="text-slate-400 leading-8 mb-5">
+                Que vous rêviez de développer votre carrière,
+                de créer votre entreprise, de participer à la vie
+                citoyenne ou simplement de vivre des aventures
+                inoubliables avec d'autres joueurs, votre place
+                vous attend dans notre communauté.
+            </p>
+
+            <p class="text-slate-400 leading-8 mb-8">
+                Novalya RP souhaite proposer une expérience
+                conviviale dans laquelle le respect, l'immersion
+                et la créativité occupent une place importante.
+                Chaque rencontre peut devenir le début d'une
+                nouvelle histoire. Chaque décision peut avoir
+                des conséquences sur votre personnage.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+
+                <a
+                    href="https://discord.gg/RGBuPNVmmE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn rounded-xl px-7 py-4 font-extrabold text-center"
+                >
+                    <i class="fa-brands fa-discord mr-2"></i>
+                    Rejoindre le Discord
+                </a>
+
+                <a
+                    href="#presentation"
+                    class="glass rounded-xl px-7 py-4 font-bold text-center hover:bg-white/10"
+                >
+                    Découvrir Novalya
+                    <i class="fa-solid fa-arrow-down ml-2"></i>
+                </a>
+
+            </div>
         </div>
-      </div>
-      <div class="relative">
-        <div class="absolute -inset-3 rounded-3xl bg-gradient-to-br from-blue-600/25 to-violet-600/25 blur-2xl"></div>
-        <img src="novalya-banner.png" alt="Bannière officielle Novalya RP — Nova-Life Amboise" class="relative w-full rounded-2xl border border-white/10 shadow-2xl">
-        <p class="text-center text-xs text-slate-500 mt-4">NOVALYA RP · NOVA-LIFE AMBOISE</p>
-      </div>
-    </div>
-  </header>
 
-  <section id="presentation" class="py-24">
-    <div class="max-w-6xl mx-auto px-5">
-      <div class="text-center max-w-3xl mx-auto mb-14">
-        <p class="uppercase tracking-[.2em] text-blue-300 text-xs font-extrabold mb-4">Fais connaissance avec nous</p>
-        <h2 class="text-3xl sm:text-5xl font-black mb-6">Plus qu'un serveur, <span class="gradient">une aventure.</span></h2>
-        <p class="text-slate-400 leading-8">Novalya RP est un projet communautaire autour de Nova-Life et de la carte Amboise. Notre objectif est de favoriser un roleplay vivant, cohérent et agréable, dans lequel chacun peut développer son personnage et contribuer aux histoires partagées par les joueurs.</p>
-      </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <article class="card rounded-2xl p-7"><div class="text-3xl text-blue-400 mb-5"><i class="fa-solid fa-book-open"></i></div><h3 class="text-xl font-bold mb-3">Écrivez votre histoire</h3><p class="text-sm text-slate-400 leading-7">Imaginez le passé de votre personnage, ses ambitions, ses relations et les choix qui feront évoluer son parcours. Chaque interaction peut ouvrir la porte à une nouvelle histoire.</p></article>
-        <article class="card rounded-2xl p-7"><div class="text-3xl text-violet-400 mb-5"><i class="fa-solid fa-city"></i></div><h3 class="text-xl font-bold mb-3">Construisez votre avenir</h3><p class="text-sm text-slate-400 leading-7">Trouvez votre place dans la ville, développez vos projets et prenez part à la vie quotidienne. Faites évoluer votre personnage à votre rythme et selon vos envies.</p></article>
-        <article class="card rounded-2xl p-7"><div class="text-3xl text-emerald-400 mb-5"><i class="fa-solid fa-people-group"></i></div><h3 class="text-xl font-bold mb-3">Rejoignez la communauté</h3><p class="text-sm text-slate-400 leading-7">Rencontrez d'autres passionnés, échangez des idées et participez à des scènes collectives. Le respect, l'entraide et la communication rendent l'expérience meilleure pour tous.</p></article>
-      </div>
-    </div>
-  </section>
+        <!-- IMAGE PRINCIPALE -->
+        <div class="relative">
 
-  <section id="univers" class="py-24 bg-slate-900/40 border-y border-white/5">
-    <div class="max-w-6xl mx-auto px-5">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div><p class="uppercase tracking-[.2em] text-blue-300 text-xs font-extrabold mb-4">Votre place dans la ville</p><h2 class="text-3xl sm:text-5xl font-black leading-tight mb-6">Un monde de possibilités. <span class="gradient">Une histoire à construire.</span></h2><p class="text-slate-400 leading-8 mb-5">Dans Novalya RP, votre personnage peut emprunter des chemins très différents. Faites des rencontres, prenez des décisions, développez vos projets et découvrez les conséquences de vos choix au fil de vos aventures.</p><p class="text-slate-400 leading-8">Nous souhaitons encourager un roleplay cohérent, où chacun peut participer à des scènes intéressantes. Le but n'est pas toujours de gagner, mais de créer ensemble des moments mémorables.</p></div>
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div class="card rounded-2xl p-6"><i class="fa-solid fa-briefcase text-3xl text-blue-400 mb-4"></i><h3 class="font-bold mb-2">Vie professionnelle</h3><p class="text-sm text-slate-400 leading-6">Développez votre carrière et prenez part à l'activité de la ville.</p></div>
-          <div class="card rounded-2xl p-6"><i class="fa-solid fa-scale-balanced text-3xl text-violet-400 mb-4"></i><h3 class="font-bold mb-2">Vie citoyenne</h3><p class="text-sm text-slate-400 leading-6">Participez à la vie collective et échangez avec les habitants.</p></div>
-          <div class="card rounded-2xl p-6"><i class="fa-solid fa-handshake text-3xl text-emerald-400 mb-4"></i><h3 class="font-bold mb-2">Rencontres & projets</h3><p class="text-sm text-slate-400 leading-6">Créez des liens, des alliances et des projets avec les autres joueurs.</p></div>
-          <div class="card rounded-2xl p-6"><i class="fa-solid fa-star text-3xl text-amber-400 mb-4"></i><h3 class="font-bold mb-2">Vos ambitions</h3><p class="text-sm text-slate-400 leading-6">Fixez-vous des objectifs et faites grandir votre personnage.</p></div>
+            <div class="absolute -inset-3 rounded-3xl bg-gradient-to-br from-blue-600/25 to-violet-600/25 blur-2xl"></div>
+
+            <img
+                src="novalya-banner.png"
+                alt="Bannière officielle Novalya RP — Nova-Life Amboise"
+                class="banner relative w-full rounded-2xl border border-white/10"
+            >
+
+            <p class="text-center text-xs tracking-widest text-slate-500 mt-5">
+                NOVALYA RP · NOVA-LIFE AMBOISE
+            </p>
+
         </div>
-      </div>
-    </div>
-  </section>
 
-  <section id="reglement" class="py-24">
+    </div>
+</header>
+
+
+<!-- PRÉSENTATION -->
+<section id="presentation" class="py-24">
+
     <div class="max-w-6xl mx-auto px-5">
-      <div class="text-center max-w-3xl mx-auto mb-14"><p class="uppercase tracking-[.2em] text-blue-300 text-xs font-extrabold mb-4">À lire avant de jouer</p><h2 class="text-3xl sm:text-5xl font-black mb-5">Le règlement <span class="gradient">Novalya RP</span></h2><p class="text-slate-400 leading-7">Ces règles constituent une base de bonne conduite. Le règlement officiel communiqué par le staff sur Discord reste la référence pour le serveur.</p></div>
-      <div class="grid md:grid-cols-2 gap-6">
-        <article class="card rounded-2xl p-7"><h3 class="text-xl font-bold mb-5"><span class="text-blue-400 mr-2">01.</span> Respect & comportement</h3><ul class="text-sm text-slate-300 space-y-3 leading-6"><li>• Respectez les joueurs et l'équipe du staff.</li><li>• Le harcèlement, les menaces et les propos haineux sont interdits.</li><li>• Réglez les désaccords calmement, sans perturber les scènes RP.</li><li>• Respectez les consignes de modération.</li></ul></article>
-        <article class="card rounded-2xl p-7"><h3 class="text-xl font-bold mb-5"><span class="text-violet-400 mr-2">02.</span> Immersion & roleplay</h3><ul class="text-sm text-slate-300 space-y-3 leading-6"><li>• Agissez de manière cohérente avec votre personnage.</li><li>• Le FearRP demande de prendre en compte les menaces crédibles.</li><li>• Le PainRP consiste à jouer les conséquences d'une blessure.</li><li>• Évitez le HRP qui perturbe les scènes en cours.</li><li>• Acceptez qu'une scène puisse ne pas se terminer en votre faveur.</li></ul></article>
-        <article class="card rounded-2xl p-7"><h3 class="text-xl font-bold mb-5"><span class="text-rose-400 mr-2">03.</span> Actions interdites</h3><ul class="text-sm text-slate-300 space-y-3 leading-6"><li>• Le Freekill sans motif RP valable est interdit.</li><li>• Le VDM et l'utilisation abusive d'un véhicule comme arme sont interdits.</li><li>• Le Metagaming consiste à exploiter des informations HRP en jeu.</li><li>• Les cheats, exploits et glitchs abusifs sont interdits.</li><li>• Le Streamhack est interdit.</li></ul></article>
-        <article class="card rounded-2xl p-7"><h3 class="text-xl font-bold mb-5"><span class="text-emerald-400 mr-2">04.</span> Discord & communauté</h3><ul class="text-sm text-slate-300 space-y-3 leading-6"><li>• Utilisez les salons conformément à leur fonction.</li><li>• Évitez le spam, les mentions abusives et les publicités non autorisées.</li><li>• Ne divulguez pas les informations personnelles d'autrui.</li><li>• Signalez les incidents au staff avec des explications claires.</li></ul></article>
-        <article class="card rounded-2xl p-7"><h3 class="text-xl font-bold mb-5"><span class="text-blue-400 mr-2">05.</span> Personnage & identité RP</h3><ul class="text-sm text-slate-300 space-y-3 leading-6"><li>• Choisissez un nom adapté à l'univers RP.</li><li>• Les noms insultants ou provocateurs peuvent être refusés.</li><li>• Préservez la cohérence de votre personnage et de son histoire.</li><li>• Ne changez pas d'identité pour échapper aux conséquences d'une scène.</li></ul></article>
-        <article class="card rounded-2xl p-7"><h3 class="text-xl font-bold mb-5"><span class="text-amber-400 mr-2">06.</span> Sanctions & modération</h3><ul class="text-sm text-slate-300 space-y-3 leading-6"><li>• Les infractions peuvent entraîner un avertissement, une exclusion ou un bannissement.</li><li>• La sanction dépend de la gravité et de la répétition des faits.</li><li>• Contourner une sanction peut entraîner des mesures supplémentaires.</li><li>• Vous pouvez contacter le staff calmement pour demander des précisions.</li></ul></article>
-      </div>
-      <div class="mt-8 glass rounded-2xl p-6"><h3 class="font-bold mb-2"><i class="fa-solid fa-circle-info text-blue-400 mr-2"></i>Besoin d'aide ?</h3><p class="text-sm text-slate-400 leading-7">En cas de doute, contactez le staff sur Discord avant d'agir. Consultez le règlement officiel du serveur pour connaître les règles détaillées et les éventuelles mises à jour.</p></div>
-    </div>
-  </section>
 
-  <section class="py-24 bg-slate-900/40 border-y border-white/5">
+        <div class="text-center max-w-3xl mx-auto mb-14">
+
+            <p class="uppercase tracking-[.2em] text-blue-300 text-xs font-extrabold mb-4">
+                Fais connaissance avec nous
+            </p>
+
+            <h2 class="text-3xl sm:text-5xl font-black mb-6">
+                Plus qu'un serveur,
+                <span class="gradient">une aventure.</span>
+            </h2>
+
+            <p class="text-slate-400 leading-8">
+                Novalya RP est un projet communautaire autour de
+                Nova-Life et de la carte Amboise. Nous souhaitons
+                réunir des joueurs passionnés de roleplay dans un
+                environnement où chacun peut développer son personnage,
+                imaginer des projets et participer à des histoires communes.
+            </p>
+
+            <p class="text-slate-400 leading-8 mt-4">
+                Que vous soyez un joueur expérimenté ou que vous
+                découvriez le roleplay, l'essentiel est de venir avec
+                l'envie de vous amuser, de respecter les autres et de
+                faire vivre votre personnage.
+            </p>
+
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+
+            <article class="card rounded-2xl p-7">
+
+                <div class="text-3xl text-blue-400 mb-5">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+
+                <h3 class="text-xl font-bold mb-3">
+                    Écrivez votre histoire
+                </h3>
+
+                <p class="text-sm text-slate-400 leading-7">
+                    Imaginez le passé de votre personnage, ses ambitions,
+                    ses relations et les objectifs qu'il souhaite atteindre.
+                    Faites évoluer son histoire au fil de vos rencontres
+                    et de vos décisions.
+                </p>
+
+            </article>
+
+            <article class="card rounded-2xl p-7">
+
+                <div class="text-3xl text-violet-400 mb-5">
+                    <i class="fa-solid fa-city"></i>
+                </div>
+
+                <h3 class="text-xl font-bold mb-3">
+                    Construisez votre avenir
+                </h3>
+
+                <p class="text-sm text-slate-400 leading-7">
+                    Développez vos projets, trouvez votre place dans la ville
+                    et participez à son activité. Votre personnage peut
+                    évoluer à son rythme et se fixer ses propres ambitions.
+                </p>
+
+            </article>
+
+            <article class="card rounded-2xl p-7">
+
+                <div class="text-3xl text-emerald-400 mb-5">
+                    <i class="fa-solid fa-people-group"></i>
+                </div>
+
+                <h3 class="text-xl font-bold mb-3">
+                    Une communauté à rejoindre
+                </h3>
+
+                <p class="text-sm text-slate-400 leading-7">
+                    Rencontrez d'autres passionnés, échangez des idées,
+                    participez aux discussions et créez des scènes RP
+                    intéressantes avec les autres membres.
+                </p>
+
+            </article>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- NOTRE UNIVERS -->
+<section id="univers" class="py-24 bg-slate-900/40 border-y border-white/5">
+
+    <div class="max-w-6xl mx-auto px-5">
+
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+            <div>
+
+                <p class="uppercase tracking-[.2em] text-blue-300 text-xs font-extrabold mb-4">
+                    Votre place dans la ville
+                </p>
+
+                <h2 class="text-3xl sm:text-5xl font-black leading-tight mb-6">
+                    Un monde de possibilités.
+                    <span class="gradient">Une histoire à construire.</span>
+                </h2>
+
+                <p class="text-slate-400 leading-8 mb-5">
+                    Dans Novalya RP, votre personnage peut emprunter
+                    des chemins très différents. Faites des rencontres,
+                    prenez des décisions, développez vos projets et
+                    découvrez les conséquences de vos choix au fil
+                    de vos aventures.
+                </p>
+
+                <p class="text-slate-400 leading-8 mb-5">
+                    Le roleplay est avant tout une expérience collective.
+                    Les meilleures scènes sont celles où chacun peut
+                    participer, faire évoluer son personnage et contribuer
+                    à l'histoire des autres joueurs.
+                </p>
+
+                <p class="text-slate-400 leading-8">
+                    Prenez le temps de découvrir la communauté, de
+                    rencontrer les habitants et de préparer votre arrivée.
+                    Votre aventure à Amboise commence avec vous.
+                </p>
+
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-4">
+
+                <div class="card rounded-2xl p-6">
+                    <i class="fa-solid fa-briefcase text-3xl text-blue-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Vie professionnelle</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Développez votre carrière et prenez part à
+                        l'activité de la ville.
+                    </p>
+                </div>
+
+                <div class="card rounded-2xl p-6">
+                    <i class="fa-solid fa-scale-balanced text-3xl text-violet-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Vie citoyenne</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Participez à la vie collective et échangez
+                        avec les autres habitants.
+                    </p>
+                </div>
+
+                <div class="card rounded-2xl p-6">
+                    <i class="fa-solid fa-handshake text-3xl text-emerald-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Rencontres & projets</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Créez des liens, des alliances et des projets
+                        avec les autres joueurs.
+                    </p>
+                </div>
+
+                <div class="card rounded-2xl p-6">
+                    <i class="fa-solid fa-star text-3xl text-amber-400 mb-4"></i>
+                    <h3 class="font-bold mb-2">Vos ambitions</h3>
+                    <p class="text-sm text-slate-400 leading-6">
+                        Fixez-vous des objectifs et faites grandir
+                        votre personnage.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- RÈGLEMENT -->
+<section id="reglement" class="py-24">
+
+    <div class="max-w-6xl mx-auto px-5">
+
+        <div class="text-center max-w-3xl mx-auto mb-14">
+
+            <p class="uppercase tracking-[.2em] text-blue-300 text-xs font-extrabold mb-4">
+                À lire avant de jouer
+            </p>
+
+            <h2 class="text-3xl sm:text-5xl font-black mb-5">
+                Le règlement
+                <span class="gradient">Novalya RP</span>
+            </h2>
+
+            <p class="text-slate-400 leading-7">
+                Le respect de ces règles contribue au bon déroulement
+                des scènes et à la bonne ambiance de la communauté.
+                Le règlement officiel communiqué par le staff sur
+                Discord reste la référence pour le serveur.
+            </p>
+
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+
+            <article class="card rounded-2xl p-7">
+                <h3 class="text-xl font-bold mb-5">
+                    <span class="text-blue-400 mr-2">01.</span>
+                    Respect & comportement
+                </h3>
+                <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                    <li>• Respectez les joueurs et l'équipe du staff.</li>
+                    <li>• Le harcèlement, les menaces et les propos haineux sont interdits.</li>
+                    <li>• Réglez les désaccords calmement.</li>
+                    <li>• Respectez les consignes de modération.</li>
+                    <li>• Faites preuve de patience et de fair-play.</li>
+                </ul>
+            </article>
+
+            <article class="card rounded-2xl p-7">
+                <h3 class="text-xl font-bold mb-5">
+                    <span class="text-violet-400 mr-2">02.</span>
+                    Immersion & roleplay
+                </h3>
+                <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                    <li>• Agissez de manière cohérente avec votre personnage.</li>
+                    <li>• Le FearRP demande de prendre en compte les menaces crédibles.</li>
+                    <li>• Le PainRP consiste à jouer les conséquences d'une blessure.</li>
+                    <li>• Évitez le HRP qui perturbe les scènes en cours.</li>
+                    <li>• Acceptez qu'une scène puisse ne pas se terminer en votre faveur.</li>
+                </ul>
+            </article>
+
+            <article class="card rounded-2xl p-7">
+                <h3 class="text-xl font-bold mb-5">
+                    <span class="text-rose-400 mr-2">03.</span>
+                    Actions interdites
+                </h3>
+                <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                    <li>• Le Freekill sans motif RP valable est interdit.</li>
+                    <li>• Le VDM et l'utilisation abusive d'un véhicule comme arme sont interdits.</li>
+                    <li>• Le Metagaming consiste à exploiter des informations HRP en jeu.</li>
+                    <li>• Les cheats, exploits et glitchs abusifs sont interdits.</li>
+                    <li>• Le Streamhack est interdit.</li>
+                </ul>
+            </article>
+
+            <article class="card rounded-2xl p-7">
+                <h3 class="text-xl font-bold mb-5">
+                    <span class="text-emerald-400 mr-2">04.</span>
+                    Discord & communauté
+                </h3>
+                <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                    <li>• Utilisez les salons conformément à leur fonction.</li>
+                    <li>• Évitez le spam et les mentions abusives.</li>
+                    <li>• Ne faites pas de publicité non autorisée.</li>
+                    <li>• Ne divulguez pas les informations personnelles d'autrui.</li>
+                    <li>• Signalez les incidents au staff avec des explications claires.</li>
+                </ul>
+            </article>
+
+            <article class="card rounded-2xl p-7">
+                <h3 class="text-xl font-bold mb-5">
+                    <span class="text-blue-400 mr-2">05.</span>
+                    Identité & personnage
+                </h3>
+                <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                    <li>• Choisissez un nom adapté à l'univers RP.</li>
+                    <li>• Les noms insultants ou provocateurs peuvent être refusés.</li>
+                    <li>• Préservez la cohérence de votre personnage.</li>
+                    <li>• Respectez les règles concernant les changements d'identité.</li>
+                </ul>
+            </article>
+
+            <article class="card rounded-2xl p-7">
+                <h3 class="text-xl font-bold mb-5">
+                    <span class="text-amber-400 mr-2">06.</span>
+                    Sanctions & modération
+                </h3>
+                <ul class="text-sm text-slate-300 space-y-3 leading-6">
+                    <li>• Une infraction peut entraîner un avertissement, une exclusion ou un bannissement.</li>
+                    <li>• La sanction dépend de la gravité et de la répétition des faits.</li>
+                    <li>• Contourner une sanction peut entraîner des mesures supplémentaires.</li>
+                    <li>• Vous pouvez contacter le staff calmement pour demander des précisions.</li>
+                </ul>
+            </article>
+
+        </div>
+
+        <div class="mt-8 glass rounded-2xl p-6">
+            <h3 class="font-bold mb-2">
+                <i class="fa-solid fa-circle-info text-blue-400 mr-2"></i>
+                Besoin d'aide ?
+            </h3>
+            <p class="text-sm text-slate-400 leading-7">
+                En cas de doute, contactez le staff sur Discord avant
+                d'agir. Consultez le règlement officiel pour connaître
+                les règles détaillées et les éventuelles mises à jour.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- GRAND BLOC DE BIENVENUE -->
+<section class="py-24 bg-slate-900/40 border-y border-white/5">
+
     <div class="max-w-4xl mx-auto px-5 text-center">
-      <img src="novalya-banner.png" alt="Novalya RP" class="w-full max-w-2xl mx-auto rounded-2xl border border-white/10 shadow-2xl mb-10">
-      <h2 class="text-3xl sm:text-5xl font-black mb-6">Votre histoire commence <span class="gradient">maintenant.</span></h2>
-      <p class="text-slate-400 leading-8 max-w-2xl mx-auto mb-8">Rejoignez le Discord de Novalya RP pour découvrir la communauté, échanger avec les membres et retrouver les informations du projet Nova-Life Amboise.</p>
-      <a href="https://discord.gg/RGBuPNVmmE" target="_blank" rel="noopener noreferrer" class="btn inline-flex items-center gap-3 rounded-xl px-8 py-4 font-extrabold"><i class="fa-brands fa-discord text-2xl"></i> Rejoindre le Discord officiel</a>
-    </div>
-  </section>
 
-  <footer class="border-t border-white/5 py-8">
-    <div class="max-w-7xl mx-auto px-5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-      <p>© 2026 Novalya RP. Tous droits réservés.</p>
-      <p>Communauté Nova-Life · Amboise</p>
-      <a href="#accueil" class="hover:text-white">Retour en haut ↑</a>
+        <img
+            src="novalya-banner.png"
+            alt="Novalya RP — Nova-Life Amboise"
+            class="w-full max-w-2xl mx-auto rounded-2xl border border-white/10 shadow-2xl mb-10"
+        >
+
+        <p class="uppercase tracking-[.2em] text-blue-300 text-xs font-extrabold mb-4">
+            Toute une aventure vous attend
+        </p>
+
+        <h2 class="text-3xl sm:text-5xl font-black mb-6">
+            Votre histoire commence
+            <span class="gradient">maintenant.</span>
+        </h2>
+
+        <p class="text-slate-400 leading-8 max-w-2xl mx-auto mb-5">
+            Toute l'équipe de Novalya RP vous souhaite la bienvenue !
+            Nous sommes ravis de vous faire découvrir notre projet
+            autour de Nova-Life Amboise.
+        </p>
+
+        <p class="text-slate-400 leading-8 max-w-2xl mx-auto mb-8">
+            Prenez le temps de consulter le règlement, de découvrir
+            la communauté et de préparer votre personnage.
+            Présentez-vous sur Discord, posez vos questions et
+            échangez avec les autres membres.
+        </p>
+
+        <a
+            href="https://discord.gg/RGBuPNVmmE"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn inline-flex items-center gap-3 rounded-xl px-8 py-4 font-extrabold"
+        >
+            <i class="fa-brands fa-discord text-2xl"></i>
+            Rejoindre le Discord officiel
+        </a>
+
     </div>
-  </footer>
+</section>
+
+
+<!-- PIED DE PAGE -->
+<footer class="border-t border-white/5 py-8">
+
+    <div class="max-w-7xl mx-auto px-5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+
+        <p>© 2026 Novalya RP. Tous droits réservés.</p>
+
+        <p>Communauté Nova-Life · Amboise</p>
+
+        <a href="#accueil" class="hover:text-white">
+            Retour en haut ↑
+        </a>
+
+    </div>
+
+</footer>
+
 </body>
 </html>
-'''
-(outdir / "index.html").write_text(html, encoding="utf-8")
-
-zip_path = Path("/mnt/data/novalya_site.zip")
-import zipfile
-with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
-    z.write(outdir / "index.html", arcname="index.html")
-    z.write(outdir / "novalya-banner.png", arcname="novalya-banner.png")
-
-print("Site créé :", outdir / "index.html")
-print("Archive créée :", zip_path)
+```
